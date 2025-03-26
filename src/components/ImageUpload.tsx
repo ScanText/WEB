@@ -25,7 +25,7 @@ const ImageUpload: React.FC = () => {
     formData.append('file', file);
 
     try {
-      const response = await axios.post('http://localhost:8000/predict', formData, {
+      const response = await axios.post('http://localhost:8000/extract-text', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
