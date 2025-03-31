@@ -3,28 +3,58 @@ import './App.css';
 import ImageUpload from './components/ImageUpload';
 import SubscriptionCheck from './crypto/SubscriptionCheck';
 import WalletConnect from './crypto/WalletConnect';
+import AdminLogin from './pages/AdminLogin';
+import AdminPanel from './pages/AdminPanel';
 
 function App() {
-  const [walletConnected, setWalletConnected] = useState(true); // заглушка, потом будет useWallet
-  const [subscriptionActive, setSubscriptionActive] = useState(false); // заглушка
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [subscriptionActive, setSubscriptionActive] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showPayments, setShowPayments] = useState(false);
 
   return (
     <div className="App">
-      <h2>📷 Распознавание текста с изображения</h2>
+      {/* 🔐 Авторизация */}
+      {!isAdmin ? (
+        <AdminLogin onLogin={() => setIsAdmin(true)} />
+      ) : (
+        <>
+          <h2>Админпанель</h2>
 
-      {/* Подключение кошелька */}
-      <WalletConnect onConnect={() => setWalletConnected(true)} />
+          {/* 📄 Кнопка показать/скрыть платежи */}
+          <button
+            onClick={() => setShowPayments(!showPayments)}
+            style={{
+              marginBottom: 20,
+              padding: '10px 20px',
+              fontSize: '16px',
+              backgroundColor: '#1976d2',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer'
+            }}
+          >
+            📄 История платежей
+          </button>
 
-      {/* Подписка */}
-      {walletConnected && (
-      <SubscriptionCheck
-        subscribed={subscriptionActive}
-        onSubscribe={() => setSubscriptionActive(true)}
-      />
-    )}
+          {showPayments && <AdminPanel />}
 
-      {/* Загрузка изображения — только если подписка активна */}
-      {walletConnected && subscriptionActive && <ImageUpload />}
+          {/* 💳 Кошелек */}
+          <WalletConnect onConnect={() => setWalletConnected(true)} />
+
+          {/* 🔔 Подписка */}
+          {walletConnected && (
+            <SubscriptionCheck
+              subscribed={subscriptionActive}
+              onSubscribe={() => setSubscriptionActive(true)}
+            />
+          )}
+
+          {/* 📤 Загрузка изображения */}
+          {walletConnected && subscriptionActive && <ImageUpload />}
+        </>
+      )}
     </div>
   );
 }

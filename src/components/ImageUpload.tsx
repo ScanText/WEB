@@ -25,11 +25,15 @@ const ImageUpload: React.FC = () => {
     formData.append('file', file);
 
     try {
-      const response = await axios.post('http://localhost:8000/extract-text', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await axios.post(
+        'https://fastapitext.fly.dev/extract-text',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
       if (response.data?.text) {
         setText(response.data.text);
@@ -118,7 +122,7 @@ const ImageUpload: React.FC = () => {
   
   return (
     <div style={styles.container}>
-  
+   <h2 style={{ marginBottom: '20px' }}>📷 Распознавание текста с изображения</h2>
       <img
         src={imagePreview || illustration}
         alt="Предпросмотр"
