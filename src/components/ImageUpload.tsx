@@ -26,6 +26,7 @@ const ImageUpload: React.FC = () => {
 
     try {
       const response = await axios.post(
+        
         'https://fastapitext.fly.dev/extract-text',
         formData,
         {
@@ -33,7 +34,9 @@ const ImageUpload: React.FC = () => {
             'Content-Type': 'multipart/form-data',
           },
         }
-      );
+      )
+      
+      console.log("📦 Ответ от сервера:", response.data);
 
       if (response.data?.text) {
         setText(response.data.text);
