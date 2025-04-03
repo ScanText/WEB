@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-interface Props {
+interface LoginProps {
   onLogin: () => void;
 }
 
-const AdminLogin: React.FC<Props> = ({ onLogin }) => {
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleLogin = () => {
     if (username === 'pavlova' && password === 'Qwerty123!') {
       setError('');
-      onLogin();
+      localStorage.setItem('loggedInUser', username);
+      navigate('/'); // переход на главную страницу
     } else {
       setError('Неверный логин или пароль');
     }
@@ -20,7 +23,8 @@ const AdminLogin: React.FC<Props> = ({ onLogin }) => {
 
   return (
     <div style={styles.container}>
-      <h2>🔐 Вход в админпанель</h2>
+      <h2>🔐 Вход в аккаунт</h2>
+
       <input
         type="text"
         placeholder="Логин"
@@ -38,6 +42,18 @@ const AdminLogin: React.FC<Props> = ({ onLogin }) => {
       <button onClick={handleLogin} style={styles.button}>
         Войти
       </button>
+
+      <button
+        onClick={() => navigate('/register')}
+        style={{
+          ...styles.button,
+          backgroundColor: '#5c6bc0',
+          marginTop: 10,
+        }}
+      >
+        Зарегистрироваться
+      </button>
+
       {error && <p style={styles.error}>{error}</p>}
     </div>
   );
@@ -75,4 +91,4 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
 };
 
-export default AdminLogin;
+export default Login;

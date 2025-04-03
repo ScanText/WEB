@@ -6,6 +6,7 @@ const WalletConnect: React.FC<{ onConnect: () => void }> = ({ onConnect }) => {
 
   useEffect(() => {
     if (walletAddress) {
+      localStorage.setItem('wallet', walletAddress);
       onConnect(); 
     }
   }, [walletAddress, onConnect]);

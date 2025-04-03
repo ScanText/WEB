@@ -1,0 +1,21 @@
+[
+    {
+      "email": "average_user1@example.com",
+      "date": "2025-03-28",
+      "review": "Работает нормально, но иногда бывают ошибки в распознавании.",
+      "service": "ImageScanPro"
+    },
+    {
+      "email": "neutral_user2@example.com",
+      "date": "2025-03-27",
+      "review": "Сервис выполняет свою функцию, но хотелось бы больше возможностей.",
+      "service": "OCRMaster"
+    },
+    {
+      "email": "just_user3@example.com",
+      "date": "2025-03-26",
+      "review": "Обычный OCR-сервис, ничем не лучше и не хуже аналогов.",
+      "service": "QuickTextScan"
+    }
+  ]
+  

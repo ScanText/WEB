@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "username": "pavlova",
+    "wallet_address": "0x1234abcd5678efgh9012ijklmnop3456qrst7890",
+    "amount": 150,
+    "timestamp": "2025-03-30T10:15:00"
+  },
+  {
+    "id": 2,
+    "username": "borodina",
+    "wallet_address": "0xabcdef1234567890abcdef1234567890abcdef12",
+    "amount": 100,
+    "timestamp": "2025-03-29T18:42:00"
+  },
+  {
+    "id": 3,
+    "username": "stotika",
+    "wallet_address": "0x9876abcd5432efgh1098ijklmnop7654qrst3210",
+    "amount": 120,
+    "timestamp": "2025-03-28T14:10:00"
+  },
+  {
+    "id": 4,
+    "username": "fateev",
+    "wallet_address": "0x9988aabbccddeeff00112233445566778899aabb",
+    "amount": 75,
+    "timestamp": "2025-03-27T09:55:00"
+  }
+]

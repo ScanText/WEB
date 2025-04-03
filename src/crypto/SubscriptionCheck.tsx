@@ -1,45 +1,39 @@
 import React from 'react';
 
-interface SubscriptionCheckProps {
-  onSubscribe: () => void;
+interface Props {
   subscribed: boolean;
+  onSubscribe: () => void;
 }
 
-const SubscriptionCheck: React.FC<SubscriptionCheckProps> = ({ onSubscribe, subscribed }) => {
+const SubscriptionCheck: React.FC<Props> = ({ subscribed, onSubscribe }) => {
   return (
-    <div style={styles.container}>
-      <h2>💳 Подписка</h2>
-      {subscribed ? (
-        <p style={{ color: 'green', fontWeight: 'bold' }}>Подписка активна ✅</p>
-      ) : (
-        <>
-          <p>Для доступа к функции OCR активируйте подписку.</p>
-          <button style={styles.button} onClick={onSubscribe}>
-            Оплатить подписку
-          </button>
-        </>
+    <div style={{ marginTop: 20 }}>
+      <p>
+        📦 Подписка: {subscribed ? (
+          <span style={{ color: 'green' }}>Активна ✅</span>
+        ) : (
+          <span style={{ color: 'red' }}>Неактивна ❌</span>
+        )}
+      </p>
+      {!subscribed && (
+        <button
+          onClick={onSubscribe}
+          style={{
+            marginTop: 10,
+            backgroundColor: '#ff9800',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: 8,
+            color: '#fff',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+          }}
+        >
+          💳 Оплатить подписку
+        </button>
       )}
     </div>
   );
-};
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    padding: 20,
-    border: '1px solid #ddd',
-    borderRadius: 8,
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  button: {
-    backgroundColor: '#1976d2',
-    color: '#fff',
-    padding: '10px 20px',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontSize: '16px',
-  },
 };
 
 export default SubscriptionCheck;

@@ -1,0 +1,21 @@
+[
+    {
+      "email": "happy_user1@example.com",
+      "date": "2025-03-28",
+      "review": "Отличный сервис! Быстро и точно распознаёт текст с изображений.",
+      "service": "ImageScanPro"
+    },
+    {
+      "email": "smiling_user2@example.com",
+      "date": "2025-03-27",
+      "review": "Очень удобный инструмент. Работает без ошибок, рекомендую!",
+      "service": "OCRMaster"
+    },
+    {
+      "email": "satisfied_client3@example.com",
+      "date": "2025-03-26",
+      "review": "Лучший OCR-сервис, которым я пользовался! Высокая точность и скорость.",
+      "service": "QuickTextScan"
+    }
+  ]
+  

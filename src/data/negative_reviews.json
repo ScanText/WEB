@@ -1,0 +1,21 @@
+[
+    {
+      "email": "unhappy_user1@example.com",
+      "date": "2025-03-28",
+      "review": "Очень низкое качество распознавания, текст искажается!",
+      "service": "ImageScanPro"
+    },
+    {
+      "email": "angry_user2@example.com",
+      "date": "2025-03-27",
+      "review": "Постоянно выдаёт ошибки, приходится проверять вручную.",
+      "service": "OCRMaster"
+    },
+    {
+      "email": "disappointed_client3@example.com",
+      "date": "2025-03-26",
+      "review": "Разочарован. Сервис не справляется с задачами, деньги на ветер.",
+      "service": "QuickTextScan"
+    }
+  ]
+  

@@ -125,7 +125,7 @@ const ImageUpload: React.FC = () => {
   
   return (
     <div style={styles.container}>
-   <h2 style={{ marginBottom: '20px' }}>📷 Распознавание текста с изображения</h2>
+   
       <img
         src={imagePreview || illustration}
         alt="Предпросмотр"
@@ -165,4 +165,3 @@ const ImageUpload: React.FC = () => {
 };
 
 export default ImageUpload;
-
