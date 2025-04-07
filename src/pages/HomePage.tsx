@@ -1,83 +1,97 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import ImageUpload from '../components/ImageUpload';
-import positive from '../data/positive_reviews.json';
-import neutral from '../data/neutral_reviews.json';
-import negative from '../data/negative_reviews.json';
 import userPlaceholder from '../assets/logo.png';
 import WalletConnect from '../crypto/WalletConnect';
 import SubscriptionCheck from '../crypto/SubscriptionCheck';
 
-type FeedbackItem = {
-  email: string;
-  date: string;
-  review: string;
-  service: string;
-};
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [availablePhotos] = useState<number>(50);
-  const [category, setCategory] = useState<'positive' | 'neutral' | 'negative'>('positive');
-  const userPhoto = localStorage.getItem('userPhoto');
   const [walletConnected, setWalletConnected] = useState(false);
   const [subscriptionActive, setSubscriptionActive] = useState(false);
+  const [userPhoto, setUserPhoto] = useState(localStorage.getItem('userPhoto'));
 
-  const getFeedbackData = (): FeedbackItem[] => {
-    switch (category) {
-      case 'neutral':
-        return neutral;
-      case 'negative':
-        return negative;
-      default:
-        return positive;
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        localStorage.setItem('userPhoto', base64);
+        setUserPhoto(base64);
+      };
+      reader.readAsDataURL(file);
     }
   };
-
+  
+ 
   return (
     <div style={styles.pageContainer}>
-      {/* 📌 Левая колонка */}
       <div style={styles.leftSidebar}>
-        <img
-          src={userPhoto || userPlaceholder}
-          alt="Логотип пользователя"
-          style={styles.logo}
-        />
-        <p style={{ fontWeight: 'bold', marginTop: 10 }}>👤 Логотип пользователя</p>
+       <img
+            src={userPhoto || userPlaceholder}
+            alt="Логотип пользователя"
+            style={styles.logo}
+          />
+          <p style={{ fontWeight: 'bold', marginTop: 10 }}>👤 Логотип пользователя</p>
 
-        <p style={{ marginTop: 20 }}>
-          <strong>🖼 Доступно загрузок:</strong> {availablePhotos} изображений
-        </p>
+          <label htmlFor="photoUpload" style={styles.uploadLabel}>
+            📤 Загрузить фото
+          </label>
+          <input
+            id="photoUpload"
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoUpload}
+            style={{ display: 'none' }}
+          />
+          <button
+            onClick={() => {
+              localStorage.removeItem('userPhoto');
+              setUserPhoto(null);
+            }}
+            style={{ ...styles.button, backgroundColor: '#e57777', marginTop: 4 }}
+          >
+            🗑 Удалить фото
+          </button>
+        <p style={{ marginTop: 20 }}><strong>🖼 Доступно загрузок:</strong> {availablePhotos} изображений</p>
 
         <div style={styles.buttonColumn}>
           <button onClick={() => navigate('/login')} style={styles.button}>🔐 Войти</button>
-          <button onClick={() => window.location.href = 'https://your-register-url.com'} style={styles.button}>📝 Зарегистрироваться</button>
+          <button onClick={() => window.location.href = 'https://your-register-site.com'} style={styles.button}>📝 Зарегистрироваться</button>
         </div>
 
-        {/* 💬 Блок с отзывами */}
+        {/* Отзывы: только кнопка и смайлики */}
         <div style={styles.feedbackBox}>
-          <h4>🗣 Отзывы</h4>
-          <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
-            <button onClick={() => setCategory('positive')}>👍</button>
-            <button onClick={() => setCategory('neutral')}>😐</button>
-            <button onClick={() => setCategory('negative')}>👎</button>
-          </div>
-          {getFeedbackData().map((item, index) => (
-            <div key={index} style={{ marginBottom: 10 }}>
-              <strong>{item.email.split('@')[0]}:</strong> {item.review}
-            </div>
-          ))}
+        <h4>🗣 Отзывы</h4>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+          <button disabled>👍</button>
+          <button disabled>😐</button>
+          <button disabled>👎</button>
+        </div>
+        <button
+          onClick={() => navigate('/feedbacks')}
+          style={{ ...styles.button, backgroundColor: '#3f51b5' }}
+        >
+          📄 Перейти к отзывам
+        </button>
+
+          <button
+            onClick={() => navigate('/users')}
+            style={{ ...styles.button, backgroundColor: '#3f51b5', marginTop: 10 }}
+          >
+            👥 Посетители
+          </button>
         </div>
       </div>
 
-      {/* 🧠 Правая часть */}
       <div style={styles.mainContent}>
         <h2 style={{ marginTop: 30 }}>📷 Распознавание текста с изображения</h2>
 
-        {/* 🔗 Кошелек */}
         <WalletConnect onConnect={() => setWalletConnected(true)} />
-
-        {/* 💳 Подписка */}
         {walletConnected && (
           <SubscriptionCheck
             subscribed={subscriptionActive}
@@ -85,10 +99,7 @@ const HomePage: React.FC = () => {
           />
         )}
 
-        {/* 📤 Загрузка изображений */}
-        {walletConnected && subscriptionActive && (
-          <ImageUpload />
-        )}
+        {walletConnected && subscriptionActive && <ImageUpload />}
       </div>
     </div>
   );
@@ -97,8 +108,6 @@ const HomePage: React.FC = () => {
 const styles: { [key: string]: React.CSSProperties } = {
   pageContainer: {
     display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'flex-start',
     padding: 40,
     fontFamily: 'Segoe UI, sans-serif',
   },
@@ -108,8 +117,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     textAlign: 'center',
   },
   logo: {
-    width: 120,
-    height: 120,
+    width: 140,
+    height: 140,
+    margin: '0 auto',
     borderRadius: '50%',
     border: '2px solid #ccc',
     objectFit: 'cover',
@@ -140,6 +150,29 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: 10,
     fontSize: 14,
     textAlign: 'left',
+  },
+  usersBox: {
+    marginTop: 40,
+    padding: 15,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    fontSize: 13,
+    textAlign: 'left',
+    overflowX: 'auto',
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+  },
+  th: {
+    borderBottom: '1px solid #999',
+    padding: 8,
+    fontWeight: 'bold',
+    textAlign: 'left',
+  },
+  td: {
+    borderBottom: '1px solid #ddd',
+    padding: 8,
   },
 };
 
