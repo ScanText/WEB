@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
+import PricingPage from './pages/PricingPage';
 import HomePage from './pages/HomePage';
 import UsersPage from './pages/UsersPage';
 import Login from './pages/Login';
-import Feedbacks from './pages/Feedbacks'; // ✅ добавлен импорт
+import Feedbacks from './pages/Feedbacks';  
 import ImageUpload from './components/ImageUpload';
 import WalletConnect from './crypto/WalletConnect';
 import SubscriptionCheck from './crypto/SubscriptionCheck';
@@ -58,6 +59,7 @@ function App() {
           }
         />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
         {/* ✅ новый маршрут для страницы отзывов */}
         <Route path="/feedbacks" element={<Feedbacks />} />
       </Routes>

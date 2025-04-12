@@ -10,7 +10,7 @@ const CommentForm: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      await axios.post('http://localhost:8000/comments/comments/', {
+      await axios.post('http://localhost:8000/comments/', {
         email,
         review,
         service,

@@ -14,8 +14,19 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const handleLogin = () => {
     if (username === 'pavlova' && password === 'Qwerty123!') {
       setError('');
+
       localStorage.setItem('loggedInUser', username);
-      navigate('/'); // переход на главную страницу
+
+      // Устанавливаем счётчик загрузок только при первом входе
+      if (!localStorage.getItem('uploadCount')) {
+        localStorage.setItem('uploadCount', '0');
+      }
+
+      // Пример: сброс других флагов, если нужно
+      // localStorage.removeItem('subscription');
+
+      onLogin(); // если используется в App
+      navigate('/');
     } else {
       setError('Неверный логин или пароль');
     }

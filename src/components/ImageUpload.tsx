@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import illustration from '../assets/1.jpg';
 
-const ImageUpload: React.FC = () => {
+interface ImageUploadProps {
+  onSuccess?: () => void;
+}
+
+const ImageUpload: React.FC<ImageUploadProps> = ({ onSuccess }) => {
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -26,7 +30,6 @@ const ImageUpload: React.FC = () => {
 
     try {
       const response = await axios.post(
-        
         'https://fastapitext.fly.dev/extract-text',
         formData,
         {
@@ -34,23 +37,25 @@ const ImageUpload: React.FC = () => {
             'Content-Type': 'multipart/form-data',
           },
         }
-      )
-      
-      console.log("📦 Ответ от сервера:", response.data);
+      );
+
+      console.log('📦 Ответ от сервера:', response.data);
 
       if (response.data?.text) {
         setText(response.data.text);
         setError('');
+        if (onSuccess) onSuccess(); // 👈 Вызываем после успешного результата
       } else {
         setText('');
         setError('Нет текста в ответе сервера.');
       }
     } catch (err) {
-      console.error("Ошибка при загрузке изображения:", err);
+      console.error('Ошибка при загрузке изображения:', err);
       setText('');
       setError('Ошибка при распознавании текста.');
     }
   };
+
   const styles: { [key: string]: React.CSSProperties } = {
     container: {
       padding: 40,
@@ -122,16 +127,15 @@ const ImageUpload: React.FC = () => {
       marginTop: 15,
     },
   };
-  
+
   return (
     <div style={styles.container}>
-   
       <img
         src={imagePreview || illustration}
         alt="Предпросмотр"
         style={styles.image}
       />
-  
+
       <div style={styles.buttonGroup}>
         <label htmlFor="file-upload" style={styles.uploadButton}>
           Выбрать изображение
@@ -143,14 +147,14 @@ const ImageUpload: React.FC = () => {
           onChange={handleFileChange}
           style={{ display: 'none' }}
         />
-  
+
         {file && (
           <button onClick={handleUpload} style={styles.sendButton}>
             📤 Отправить
           </button>
         )}
       </div>
-  
+
       <div style={styles.result}>
         {text && (
           <>
@@ -159,7 +163,7 @@ const ImageUpload: React.FC = () => {
           </>
         )}
         {error && <p style={styles.error}>{error}</p>}
-        </div>
+      </div>
     </div>
   );
 };

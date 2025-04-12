@@ -20,7 +20,7 @@ const CommentsBlock: React.FC<CommentsBlockProps> = ({ selectedService }) => {
 
   useEffect(() => {
     axios
-      .get<Comment[]>(`http://localhost:8000/comments/comments/`)
+      .get<Comment[]>(`http://localhost:8000/comments/`)
       .then((res) => setComments(res.data))
       .catch((err) => console.error('❌ Ошибка загрузки комментариев:', err));
   }, []);
