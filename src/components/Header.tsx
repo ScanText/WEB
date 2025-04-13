@@ -1,36 +1,51 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import background from '../assets/header.png';
 
 interface HeaderProps {
   isLoggedIn: boolean;
-  username?: string;
+  login: string;
   hasSubscription: boolean;
+  userPhoto?: string | null;
 }
 
-const Header: React.FC<HeaderProps> = ({ isLoggedIn, username, hasSubscription }) => {
+const Header: React.FC<HeaderProps> = ({
+  isLoggedIn,
+  login,
+  hasSubscription,
+  userPhoto,
+}) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('loggedInUser');
-    window.location.reload(); // 👈 или navigate('/') если хочешь без перезагрузки
+    localStorage.clear();
+    navigate('/login');
+    window.location.reload();
   };
 
-  return (
-    <header style={styles.header}>
-      <div style={styles.logo} onClick={() => navigate('/')}>🚀 ScanText</div>
-      <nav style={styles.nav}>
-        <button onClick={() => navigate('/feedbacks')}>📊 О нас</button>
+  const displayName = login === 'true' || login === 'false' ? 'Пользователь' : login;
 
+  return (
+    <header style={{ ...styles.header, backgroundImage: `url(${background})` }}>
+      <div style={styles.logo} onClick={() => navigate('/')}>ScanText</div>
+      <div style={styles.promoTextBox}>
+        <h1 style={styles.promoTitle}>Безлимитный онлайн-сервис скан-текста</h1>
+        <p style={styles.promoSubtitle}>Интеллектуализируйте свои знания с помощью лучшего OCR</p>
+      </div>
+      <nav style={styles.nav}>
+        <button onClick={() => navigate('/about')} style={styles.navBtn}>📊 О нас</button>
         {!isLoggedIn ? (
-          <button onClick={() => navigate('/login')}>👤 Войти</button>
+          <button onClick={() => navigate('/login')} style={styles.loginBtn}>👤 Войти</button>
         ) : (
           <div style={styles.userBlock}>
-            <span style={hasSubscription ? styles.activeUser : styles.inactiveUser}>👤</span>
-            <span>{username}</span>
-            {hasSubscription && (
-              <span title="Подписка активна">✅</span>
-            )}
-            <button onClick={handleLogout} style={styles.logoutBtn}>🚪 Выйти</button>
+            <img
+              src={userPhoto || require('../assets/user-gray.png')}
+              alt="User"
+              style={{ ...styles.avatar, filter: userPhoto ? 'none' : 'grayscale(100%)' }}
+            />
+            <span style={styles.username}>{displayName}</span>
+            <span>{hasSubscription ? '✅' : '❌'}</span>
+            <button onClick={handleLogout} style={styles.logoutBtn}>Выйти</button>
           </div>
         )}
       </nav>
@@ -40,42 +55,86 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, username, hasSubscription }
 
 const styles: { [key: string]: React.CSSProperties } = {
   header: {
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    padding: '20px 20px 30px',
     display: 'flex',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
     alignItems: 'center',
-    padding: '12px 24px',
-    backgroundColor: '#282c34',
     color: 'white',
-    fontSize: 18,
+    textAlign: 'center',
+    minHeight: 160,
   },
   logo: {
-    cursor: 'pointer',
+    fontSize: 24,
     fontWeight: 'bold',
+    cursor: 'pointer',
+    alignSelf: 'flex-start',
+    color: '#888',
+  },
+  promoTextBox: {
+    marginTop: 12,
+  },
+  promoTitle: {
+    fontSize: 20,
+    fontWeight: 600,
+    color: '#555',
+  },
+  promoSubtitle: {
+    fontSize: 14,
+    color: '#777',
+    marginTop: 4,
   },
   nav: {
     display: 'flex',
-    gap: 20,
     alignItems: 'center',
+    gap: 16,
+    position: 'absolute',
+    right: 20,
+    top: 20,
+  },
+  navBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#888',
+    fontSize: 16,
+    cursor: 'pointer',
+  },
+  loginBtn: {
+    backgroundColor: '#a7896c',
+    padding: '8px 14px',
+    color: '#eee',
+    borderRadius: 6,
+    border: 'none',
+    fontSize: 14,
+  },
+  logoutBtn: {
+    marginLeft: 10,
+    backgroundColor: '#a7896c',
+    color: '#eee',
+    border: 'none',
+    padding: '6px 10px',
+    borderRadius: 6,
+    cursor: 'pointer',
   },
   userBlock: {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
+    backgroundColor: '#c7b299',
+    padding: '6px 12px',
+    borderRadius: 8,
+    color: '#444',
   },
-  activeUser: {
-    color: 'limegreen',
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: '50%',
+    objectFit: 'cover',
   },
-  inactiveUser: {
-    color: 'gray',
-  },
-  logoutBtn: {
-    background: '#ff6b6b',
-    border: 'none',
-    padding: '6px 10px',
-    color: '#fff',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontSize: 14,
+  username: {
+    color: '#444',
+    fontWeight: 500,
   },
 };
 

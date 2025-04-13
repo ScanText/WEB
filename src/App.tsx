@@ -2,18 +2,16 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
+import Register from './pages/Register';
 import PricingPage from './pages/PricingPage';
 import HomePage from './pages/HomePage';
-import UsersPage from './pages/UsersPage';
+import UserDashboard from './pages/UserDashboard';
 import Login from './pages/Login';
-import Feedbacks from './pages/Feedbacks';  
-import ImageUpload from './components/ImageUpload';
-import WalletConnect from './crypto/WalletConnect';
-import SubscriptionCheck from './crypto/SubscriptionCheck';
+import Feedbacks from './pages/Feedbacks';
+import ImageUploadWithWallet from './components/ImageUploadWithWallet';
+import AboutPage from './pages/AboutPage';
 
 function App() {
-  const [walletConnected, setWalletConnected] = useState(false);
-  const [subscriptionActive, setSubscriptionActive] = useState(false);
   const [isAdmin, setIsAdmin] = useState(!!localStorage.getItem('loggedInUser'));
   const [showPayments, setShowPayments] = useState(false);
 
@@ -21,6 +19,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
+
         <Route
           path="/login"
           element={
@@ -32,8 +31,9 @@ function App() {
             />
           }
         />
+
         <Route
-          path="/admin"
+          path="/login"
           element={
             isAdmin ? (
               <div className="App">
@@ -44,23 +44,17 @@ function App() {
                 >
                   📄 История платежей
                 </button>
-                <WalletConnect onConnect={() => setWalletConnected(true)} />
-                {walletConnected && (
-                  <SubscriptionCheck
-                    subscribed={subscriptionActive}
-                    onSubscribe={() => setSubscriptionActive(true)}
-                  />
-                )}
-                {walletConnected && subscriptionActive && <ImageUpload />}
+                <ImageUploadWithWallet />
               </div>
             ) : (
               <Navigate to="/login" replace />
             )
           }
         />
-        <Route path="/users" element={<UsersPage />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/user" element={<UserDashboard />} />
         <Route path="/pricing" element={<PricingPage />} />
-        {/* ✅ новый маршрут для страницы отзывов */}
         <Route path="/feedbacks" element={<Feedbacks />} />
       </Routes>
     </Router>

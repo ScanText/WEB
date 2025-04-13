@@ -1,5 +1,6 @@
 import React from 'react';
 import qr from '../assets/qr-code.png';
+import footerBackground from '../assets/footer.png';
 
 const Footer: React.FC = () => {
   const handleCopy = () => {
@@ -10,32 +11,36 @@ const Footer: React.FC = () => {
   return (
     <footer style={styles.footer}>
       <div style={styles.container}>
-        <p style={styles.copy}>© 2025 ScanText</p>
+        <div style={styles.leftSide}>
+          <p style={styles.copy}>© 2025 ScanText</p>
+        </div>
 
-        <div style={styles.downloadBlock}>
-          {/* Блок загрузки десктопа */}
-          <div style={styles.desktopBlock}>
-            <h4>💻 Скачайте на компьютер</h4>
-            <div style={styles.platforms}>
-              <a href="https://example.com/windows" target="_blank" rel="noreferrer" style={styles.link}>
-                🪟 Windows
-              </a>
-              <a href="https://example.com/macos" target="_blank" rel="noreferrer" style={styles.link}>
-                🍏 macOS
-              </a>
+        <div style={styles.rightSide}>
+          <div style={styles.downloadBlock}>
+            {/* Блок загрузки десктопа */}
+            <div style={styles.desktopBlock}>
+              <h4>💻 Скачайте на компьютер</h4>
+              <div style={styles.platforms}>
+                <a href="https://example.com/windows" target="_blank" rel="noreferrer" style={styles.link}>
+                  🪟 Windows
+                </a>
+                <a href="https://example.com/macos" target="_blank" rel="noreferrer" style={styles.link}>
+                  🍏 macOS
+                </a>
+              </div>
             </div>
-          </div>
 
-          {/* Блок с QR */}
-          <div style={styles.qrBlock}>
-            <h4>📱 Отсканируйте QR-код</h4>
-            <img
-              src={qr}
-              alt="QR-код мобильного приложения"
-              style={{ width: 120, height: 120, borderRadius: 8 }}
-            />
-            <p style={styles.note}>Откройте на телефоне</p>
-            <button onClick={handleCopy} style={styles.copyBtn}>📋 Скопировать ссылку</button>
+            {/* Блок с QR */}
+            <div style={styles.qrBlock}>
+              <h4>📱 Отсканируйте QR-код</h4>
+              <img
+                src={qr}
+                alt="QR-код мобильного приложения"
+                style={{ width: 120, height: 120, borderRadius: 8 }}
+              />
+              <p style={styles.note}>Откройте на телефоне</p>
+              <button onClick={handleCopy} style={styles.copyBtn}>📋 Скопировать ссылку</button>
+            </div>
           </div>
         </div>
       </div>
@@ -47,24 +52,35 @@ const styles: { [key: string]: React.CSSProperties } = {
   footer: {
     marginTop: 60,
     padding: '40px 20px',
-    backgroundColor: '#f0f0f0',
-    color: '#333',
+    background: `url(${footerBackground}) no-repeat center center`,
+    backgroundSize: 'cover',
+    color: '#fff',
     fontSize: 14,
   },
   container: {
-    maxWidth: 1000,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    maxWidth: '1000px',
     margin: '0 auto',
-    textAlign: 'center',
+  },
+  leftSide: {
+    flex: 1,
+    display: 'flex',
+    justifyContent: 'flex-start',
+  },
+  rightSide: {
+    flex: 2,
+    display: 'flex',
+    justifyContent: 'space-between',
   },
   copy: {
     marginBottom: 20,
   },
   downloadBlock: {
     display: 'flex',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: 60,
-    marginTop: 20,
   },
   desktopBlock: {
     textAlign: 'center',
@@ -87,7 +103,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   note: {
     marginTop: 8,
     fontSize: 13,
-    color: '#666',
+    color: '#ddd',
   },
   copyBtn: {
     marginTop: 10,
