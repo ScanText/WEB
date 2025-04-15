@@ -49,19 +49,67 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ userPhoto, setUserPhoto }) =>
       >
         🗑 Удалить
       </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 20 }}>
+        <button
+          onClick={() => navigate('/pricing')}
+          style={{
+            backgroundColor: '#f97316', // 🟧 оранжевая
+            color: '#fff',
+            padding: '10px 16px',
+            fontSize: 14,
+            borderRadius: 8,
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          💳 Оплатить подписку
+        </button>
 
-      <div style={styles.feedbackBox}>
-        <h4>🗣 Отзывы</h4>
-        <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
-          <button disabled>👍</button>
-          <button disabled>😐</button>
-          <button disabled>👎</button>
-        </div>
+        <button
+          onClick={() => navigate('/payments')}
+          style={{
+            backgroundColor: '#60a5fa', // 🔵 спокойный синий
+            color: '#fff',
+            padding: '10px 16px',
+            fontSize: 14,
+            borderRadius: 8,
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          🧾 История платежей
+        </button>
+
         <button
           onClick={() => navigate('/feedbacks')}
-          style={styles.feedbackBtn}
-        >📄 Перейти к отзывам</button>
-      </div>
+          style={{
+            backgroundColor: '#a78bfa', // 🟣 пастельный фиолетовый
+            color: '#fff',
+            padding: '10px 16px',
+            fontSize: 14,
+            borderRadius: 8,
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          💬 Отзывы
+        </button>
+
+        <button
+          onClick={() => navigate('/change-password')}
+          style={{
+            backgroundColor: '#c084fc', // светло-фиолетовый
+            color: '#fff',
+            padding: '10px 16px',
+            fontSize: 14,
+            borderRadius: 8,
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          🔑 Изменить пароль
+        </button>
+      </div>     
     </div>
   );
 };

@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import worldMap from '../assets/map.png';
+
+// import worldMap from '../assets/map.png';
 
 interface LoginProps {
   onLogin: () => void;
@@ -44,9 +43,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   return (
-    <div style={{ ...styles.page, backgroundImage: `url(${worldMap})` }}>
-      <Header isLoggedIn={false} login="" hasSubscription={false} />
-
+    // <div style={{ ...styles.page, backgroundImage: `url(${worldMap})` }}>     
       <div style={styles.container}>
         <div style={styles.welcomeBox}>
           <h2 style={styles.welcomeTitle}>Добро пожаловать :)</h2>
@@ -73,6 +70,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         />
         <button onClick={handleLogin} style={styles.button}>Войти</button>
         <button
+          onClick={() => navigate('/change-password')}
+          style={{ ...styles.button, backgroundColor: '#9c27b0', marginTop: 10 }}
+        >
+          🔑 Изменить пароль
+        </button>
+        <button
           onClick={() => navigate('/register')}
           style={{ ...styles.button, backgroundColor: '#5c6bc0', marginTop: 10 }}
         >
@@ -80,9 +83,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </button>
         {error && <p style={styles.error}>{error}</p>}
       </div>
-
-      <Footer />
-    </div>
+    // </div>
   );
 };
 

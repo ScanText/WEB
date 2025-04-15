@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
 import worldMap from '../assets/map.png';
 
 const Register: React.FC = () => {
@@ -39,8 +37,7 @@ const Register: React.FC = () => {
 
   return (
     <div style={{ ...styles.page, backgroundImage: `url(${worldMap})` }}>
-      <Header isLoggedIn={false} login="" hasSubscription={false} />
-
+     
       <div style={styles.container}>
         <h2>📝 Регистрация</h2>
         <input
@@ -77,9 +74,7 @@ const Register: React.FC = () => {
           Уже есть аккаунт? Войти
         </button>
         {error && <p style={styles.error}>{error}</p>}
-      </div>
-
-      <Footer />
+      </div>     
     </div>
   );
 };

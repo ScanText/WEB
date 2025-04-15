@@ -8,7 +8,9 @@ interface PaymentsTableProps {
 interface Payment {
   id: number;
   amount: number;
-  date: string;
+  method: string;
+  status: string;
+  created_at: string;
 }
 
 const PaymentsTable: React.FC<PaymentsTableProps> = ({ login }) => {
@@ -45,7 +47,7 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({ login }) => {
           <tbody>
             {payments.map(payment => (
               <tr key={payment.id}>
-                <td style={styles.td}>{new Date(payment.date).toLocaleString()}</td>
+                <td style={styles.td}>{new Date(payment.created_at).toLocaleString()}</td>
                 <td style={styles.td}>{payment.amount} ₴</td>
               </tr>
             ))}
@@ -66,6 +68,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: '8px 12px',
     borderBottom: '1px solid #eee',
   },
+
 };
 
 export default PaymentsTable;

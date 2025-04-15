@@ -30,7 +30,7 @@ const Header: React.FC<HeaderProps> = ({
       <div style={styles.logo} onClick={() => navigate('/')}>ScanText</div>
       <div style={styles.promoTextBox}>
         <h1 style={styles.promoTitle}>Безлимитный онлайн-сервис скан-текста</h1>
-        <p style={styles.promoSubtitle}>Интеллектуализируйте свои знания с помощью лучшего OCR</p>
+        <p style={styles.promoSubtitle}>Сканируйте изображение — извлекайте текст за секунды </p>
       </div>
       <nav style={styles.nav}>
         <button onClick={() => navigate('/about')} style={styles.navBtn}>📊 О нас</button>
@@ -46,6 +46,14 @@ const Header: React.FC<HeaderProps> = ({
             <span style={styles.username}>{displayName}</span>
             <span>{hasSubscription ? '✅' : '❌'}</span>
             <button onClick={handleLogout} style={styles.logoutBtn}>Выйти</button>
+            {isLoggedIn && (
+              <button
+                onClick={() => navigate('/change-password')}
+                style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', marginLeft: 10 }}
+              >
+                🔁 Сменить пароль
+              </button>
+            )}
           </div>
         )}
       </nav>
@@ -57,7 +65,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   header: {
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    padding: '20px 20px 30px',
+    padding: '10px 10px 20px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

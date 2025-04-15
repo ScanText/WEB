@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import CardPaymentButton from '../components/CardPaymentButton';
 import UserSidebar from '../components/UserSidebar';
 import PaymentsTable from '../crypto/PaymentsTable';
 import axios from 'axios';
@@ -49,19 +48,12 @@ const UserDashboard: React.FC = () => {
 
   return (
     <>
-      <Header
-        isLoggedIn={isLoggedIn}
-        login={login}
-        hasSubscription={hasSubscription}
-        userPhoto={userPhoto}
-      />
       <div style={styles.container}>
         <UserSidebar
           userPhoto={userPhoto}
           setUserPhoto={setUserPhoto}
         />
-
-        <div style={styles.mainContent}>
+  
           <h2>👤 Личный кабинет</h2>
           {user ? (
             <table style={styles.table}>
@@ -100,12 +92,14 @@ const UserDashboard: React.FC = () => {
                 <span style={{ color: 'red' }}>Неактивна ❌</span>
               )}
             </p>
+            <div style={{ marginTop: 30, textAlign: 'center' }}>
+              <CardPaymentButton />
+            </div>
           </div>
-
+          <div style={styles.mainContent}>
           {user && <PaymentsTable login={user.login} />}
         </div>
       </div>
-      <Footer />
     </>
   );
 };
@@ -120,8 +114,12 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   mainContent: {
     flex: 1,
-    textAlign: 'left',
-    maxWidth: 600,
+    maxWidth: 640,
+    marginTop: 20,
+    backgroundColor: '#fff',
+    padding: 30,
+    borderRadius: 12,
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
   },
   table: {
     width: '100%',

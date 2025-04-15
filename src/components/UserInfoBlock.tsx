@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import CardPaymentButton from '../components/CardPaymentButton';
 
 const UserInfoBlock: React.FC = () => {
   const navigate = useNavigate();
@@ -14,9 +15,9 @@ const UserInfoBlock: React.FC = () => {
       <div style={styles.table}>
         <div style={styles.rowHeader}>
           <div style={styles.cell}></div>
-          <div style={styles.cell}>Базовый<br /><strong>$0</strong></div>
-          <div style={styles.cell}>Плюс<br /><strong>$2.99/мес.</strong></div>
-          <div style={styles.cell}>Премиум<br /><strong>$4.99/мес.</strong></div>
+          <div style={styles.cell}>Базовый<br /><strong>₴0</strong></div>
+          <div style={styles.cell}>Плюс<br /><strong>₴200/мес.</strong></div>
+          <div style={styles.cell}>Премиум<br /><strong>₴400/мес.</strong></div>
         </div>
 
         {[
@@ -38,20 +39,25 @@ const UserInfoBlock: React.FC = () => {
 
         <div style={styles.rowFooter}>
           <div style={styles.cell}></div>
+
           <div style={styles.cell}>
             <button style={styles.freeBtn} onClick={() => navigate('/')}>
               Попробовать бесплатно
             </button>
           </div>
+
           <div style={styles.cell}>
-            <button style={styles.blueBtn} onClick={() => navigate('/pay/plus')}>
-              Оформить Plus
-            </button>
+            <CardPaymentButton amount={200} reference="sub-plus" />
+            <div style={styles.paymentNote}>
+              Пдписка: <strong>Plus200 грн</strong>
+            </div>
           </div>
+
           <div style={styles.cell}>
-            <button style={styles.blueBtn} onClick={() => navigate('/pay/premium')}>
-              Оформить Premium
-            </button>
+            <CardPaymentButton amount={400} reference="sub-premium" />
+            <div style={styles.paymentNote}>
+              Подписка: <strong>Premium 400 грн</strong>
+            </div>
           </div>
         </div>
       </div>
@@ -123,6 +129,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: 6,
     cursor: 'pointer',
     fontWeight: 'bold',
+  },
+  paymentNote: {
+    marginTop: 8,
+    fontSize: 13,
+    color: '#555',
   },
 };
 

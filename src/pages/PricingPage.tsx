@@ -1,7 +1,5 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
 import UserInfoBlock from '../components/UserInfoBlock';
 
 const PricingPage: React.FC = () => {
@@ -24,30 +22,25 @@ const PricingPage: React.FC = () => {
     }
   }, []);
 
-  const login = localStorage.getItem('loggedInUser') || '';
-  const isLoggedIn = !!login;
-  const userPhoto = localStorage.getItem('userPhoto');
-  const hasSubscription = localStorage.getItem('subscription') === 'true';
-
   return (
     <>
-      <Header
-        isLoggedIn={isLoggedIn}
-        login={login}
-        hasSubscription={hasSubscription}
-        userPhoto={userPhoto}
-      />
       <main style={{ padding: 30 }}>
         <h2>💼 Страница тарифов</h2>
         <UserInfoBlock />
         <button
           onClick={() => navigate('/user')}
-          style={{ marginTop: 20, padding: '10px 16px', backgroundColor: '#4caf50', color: 'white', border: 'none', borderRadius: 6 }}
+          style={{
+            marginTop: 20,
+            padding: '10px 16px',
+            backgroundColor: '#4caf50',
+            color: 'white',
+            border: 'none',
+            borderRadius: 6
+          }}
         >
           🔙 Вернуться в кабинет
         </button>
       </main>
-      <Footer />
     </>
   );
 };
