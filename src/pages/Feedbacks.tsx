@@ -1,26 +1,13 @@
 import React, { useState } from 'react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
 import CommentsBlock from './CommentsBlock';
 import CommentForm from './CommentForm';
 
 const Feedbacks: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [service, setService] = useState<'ScanText' | 'StatApp' | 'MathAI' | ''>('');
-
-  const login = localStorage.getItem('loggedInUser') || '';
-  const isLoggedIn = !!login;
-  const userPhoto = localStorage.getItem('userPhoto');
-  const hasSubscription = localStorage.getItem('subscription') === 'true';
-
+ 
   return (
     <>
-      <Header
-        isLoggedIn={isLoggedIn}
-        login={login}
-        hasSubscription={hasSubscription}
-        userPhoto={userPhoto}
-      />
       <div style={styles.page}>
         <h2>🗣 Отзывы пользователей</h2>
 
@@ -42,7 +29,6 @@ const Feedbacks: React.FC = () => {
         </button>
         {showForm && <CommentForm />}
       </div>
-      <Footer />
     </>
   );
 };

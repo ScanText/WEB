@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import illustration from '../assets/1.jpg';
 import { useWallet } from '../crypto/useWallet';
 
-
 const MAX_ATTEMPTS = 3;
 
 const ImageUploadWithWallet: React.FC = () => {
@@ -17,6 +16,7 @@ const ImageUploadWithWallet: React.FC = () => {
   const { walletAddress, connect } = useWallet();
   const navigate = useNavigate();
 
+  // ✅ Проверка и сброс при входе пользователя
   useEffect(() => {
     const user = localStorage.getItem('loggedInUser') || 'guest';
     const previousUser = localStorage.getItem('previousUser');
@@ -24,11 +24,40 @@ const ImageUploadWithWallet: React.FC = () => {
     if (previousUser && previousUser !== user) {
       localStorage.setItem('uploadCount', '0');
       localStorage.setItem('subscription', 'false');
+      localStorage.removeItem('selectedPlan');
     }
 
     localStorage.setItem('previousUser', user);
-    setUploadCount(parseInt(localStorage.getItem('uploadCount') || '0'));
-    setSubscribed(localStorage.getItem('subscription') === 'true');
+
+    const rawCount = localStorage.getItem('uploadCount');
+    const parsedCount = parseInt(rawCount || '0');
+
+    if (isNaN(parsedCount) || parsedCount < 0) {
+      localStorage.setItem('uploadCount', '0');
+      setUploadCount(0);
+    } else {
+      setUploadCount(parsedCount);
+    }
+
+    const subscription = localStorage.getItem('subscription');
+    setSubscribed(subscription === 'true');
+  }, []);
+
+  // 🔄 Перепроверка при возврате на вкладку
+  useEffect(() => {
+    const checkSubscription = () => {
+      const rawCount = localStorage.getItem('uploadCount');
+      const parsedCount = parseInt(rawCount || '0');
+      setUploadCount(isNaN(parsedCount) ? 0 : parsedCount);
+
+      const subscription = localStorage.getItem('subscription');
+      setSubscribed(subscription === 'true');
+    };
+
+    window.addEventListener('focus', checkSubscription);
+    return () => {
+      window.removeEventListener('focus', checkSubscription);
+    };
   }, []);
 
   useEffect(() => {
@@ -93,6 +122,7 @@ const ImageUploadWithWallet: React.FC = () => {
   };
 
   const handleSubscribe = () => {
+    localStorage.removeItem('selectedPlan');
     navigate('/pricing');
   };
 
@@ -193,30 +223,52 @@ const ImageUploadWithWallet: React.FC = () => {
       <button style={styles.linkBtn} onClick={() => navigate('/user')}>
         🔑 Мой кабинет
       </button>
-
       <img src={imagePreview || illustration} alt="Предпросмотр" style={styles.image} />
 
       <div style={styles.buttonRow}>
-        <label htmlFor="file-upload" style={{ ...styles.commonButton, ...styles.uploadButton }}>Выбрать изображение</label>
+        <label htmlFor="file-upload" style={{ ...styles.commonButton, ...styles.uploadButton }}>
+          Выбрать изображение
+        </label>
         <input id="file-upload" type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
 
-        {file && <button onClick={handleUpload} style={{ ...styles.commonButton, ...styles.sendButton }}>📤 Отправить</button>}
+        {file && (
+          <button onClick={handleUpload} style={{ ...styles.commonButton, ...styles.sendButton }}>
+            📤 Отправить
+          </button>
+        )}
       </div>
 
       <div style={styles.result}>
-        {text && (<><h3>📝 Распознанный текст:</h3><pre style={styles.text}>{text}</pre></>)}
+        {text && (
+          <>
+            <h3>📝 Распознанный текст:</h3>
+            <pre style={styles.text}>{text}</pre>
+          </>
+        )}
         {error && <p style={styles.error}>{error}</p>}
       </div>
 
       <p style={{ marginTop: 20 }}>
-        📦 Подписка: {subscribed ? (<span style={{ color: 'green' }}>Активна ✅</span>) : (<span style={{ color: 'red' }}>Неактивна ❌</span>)}
+        📦 Подписка: {subscribed ? <span style={{ color: 'green' }}>Активна ✅</span> : <span style={{ color: 'red' }}>Неактивна ❌</span>}
       </p>
+
       {!subscribed && (
-        <button onClick={handleSubscribe} style={styles.subscribeBtn}>💳 Оплатить подписку</button>
+        <p>
+          🧪 Осталось попыток: <strong>{Math.max(0, MAX_ATTEMPTS - uploadCount)}</strong> из {MAX_ATTEMPTS}
+        </p>
+      )}
+
+      {!subscribed && (
+        <button onClick={handleSubscribe} style={styles.subscribeBtn}>
+          💳 Оплатить подписку
+        </button>
       )}
 
       {!subscribed && uploadCount >= MAX_ATTEMPTS && (
-        <button onClick={handleResetAttempts} style={{ marginTop: 20, fontSize: 14, border: 'none', color: '#42a5f5', background: 'transparent', cursor: 'pointer' }}>
+        <button
+          onClick={handleResetAttempts}
+          style={{ marginTop: 20, fontSize: 14, border: 'none', color: '#42a5f5', background: 'transparent', cursor: 'pointer' }}
+        >
           🔄 Я оплатил — сбросить попытки
         </button>
       )}
@@ -224,6 +276,7 @@ const ImageUploadWithWallet: React.FC = () => {
       <button onClick={connect} style={styles.walletBtn}>
         {walletAddress ? '🔗 Кошелек подключен' : '🔗 Подключить кошелек'}
       </button>
+
       {walletAddress && <p style={{ marginBottom: 20 }}>Адрес: {walletAddress}</p>}
     </div>
   );
