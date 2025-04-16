@@ -119,12 +119,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         >
           Зарегистрироваться
         </button>
-        <button
-          onClick={() => navigate('/change-password')}
-          style={{ ...styles.button, backgroundColor: '#9c27b0', marginTop: 10 }}
-        >
-          🔑 Изменить пароль
-        </button>
+        
         <div style={{ marginTop: 20 }}>
           <GoogleLogin
             onSuccess={handleGoogleSuccess}

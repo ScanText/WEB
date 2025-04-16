@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import illustration from '../assets/1.jpg';
-import { useWallet } from '../crypto/useWallet';
 
 const MAX_ATTEMPTS = 3;
 
@@ -13,58 +12,8 @@ const ImageUploadWithWallet: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadCount, setUploadCount] = useState<number>(0);
   const [subscribed, setSubscribed] = useState<boolean>(false);
-  const { walletAddress, connect } = useWallet();
   const navigate = useNavigate();
-
-  // ✅ Проверка и сброс при входе пользователя
-  useEffect(() => {
-    const user = localStorage.getItem('loggedInUser') || 'guest';
-    const previousUser = localStorage.getItem('previousUser');
-
-    if (previousUser && previousUser !== user) {
-      localStorage.setItem('uploadCount', '0');
-      localStorage.setItem('subscription', 'false');
-      localStorage.removeItem('selectedPlan');
-    }
-
-    localStorage.setItem('previousUser', user);
-
-    const rawCount = localStorage.getItem('uploadCount');
-    const parsedCount = parseInt(rawCount || '0');
-
-    if (isNaN(parsedCount) || parsedCount < 0) {
-      localStorage.setItem('uploadCount', '0');
-      setUploadCount(0);
-    } else {
-      setUploadCount(parsedCount);
-    }
-
-    const subscription = localStorage.getItem('subscription');
-    setSubscribed(subscription === 'true');
-  }, []);
-
-  // 🔄 Перепроверка при возврате на вкладку
-  useEffect(() => {
-    const checkSubscription = () => {
-      const rawCount = localStorage.getItem('uploadCount');
-      const parsedCount = parseInt(rawCount || '0');
-      setUploadCount(isNaN(parsedCount) ? 0 : parsedCount);
-
-      const subscription = localStorage.getItem('subscription');
-      setSubscribed(subscription === 'true');
-    };
-
-    window.addEventListener('focus', checkSubscription);
-    return () => {
-      window.removeEventListener('focus', checkSubscription);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (walletAddress) {
-      localStorage.setItem('wallet', walletAddress);
-    }
-  }, [walletAddress]);
+  const [lang, setLang] = useState<string>('eng'); // язык по умолчанию
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -80,20 +29,19 @@ const ImageUploadWithWallet: React.FC = () => {
     if (!file) return;
 
     if (!subscribed && uploadCount >= MAX_ATTEMPTS) {
-      setError('💡 Вы использовали 3 бесплатные попытки.\nПожалуйста, оформите подписку для продолжения.');
+      setError('💡 Вы использовали 3 бесплатные попытки. Пожалуйста, оформите подписку для продолжения.');
       return;
     }
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('lang', lang);
 
     try {
       const response = await axios.post(
-        'https://fastapitext.fly.dev/extract-text',
+        'http://localhost:8000/tesseract-ocr',
         formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }
+        { headers: { 'Content-Type': 'multipart/form-data' } }
       );
 
       if (response.data?.text) {
@@ -126,6 +74,36 @@ const ImageUploadWithWallet: React.FC = () => {
     navigate('/pricing');
   };
 
+  useEffect(() => {
+    const user = localStorage.getItem('loggedInUser') || 'guest';
+    const previousUser = localStorage.getItem('previousUser');
+
+    if (previousUser && previousUser !== user) {
+      localStorage.setItem('uploadCount', '0');
+      localStorage.setItem('subscription', 'false');
+      localStorage.removeItem('selectedPlan');
+    }
+
+    localStorage.setItem('previousUser', user);
+
+    const rawCount = localStorage.getItem('uploadCount');
+    const parsedCount = parseInt(rawCount || '0');
+    setUploadCount(isNaN(parsedCount) ? 0 : parsedCount);
+
+    setSubscribed(localStorage.getItem('subscription') === 'true');
+  }, []);
+
+  useEffect(() => {
+    const checkSubscription = () => {
+      const count = parseInt(localStorage.getItem('uploadCount') || '0');
+      setUploadCount(isNaN(count) ? 0 : count);
+      setSubscribed(localStorage.getItem('subscription') === 'true');
+    };
+
+    window.addEventListener('focus', checkSubscription);
+    return () => window.removeEventListener('focus', checkSubscription);
+  }, []);
+
   const styles: { [key: string]: React.CSSProperties } = {
     container: {
       padding: 40,
@@ -149,7 +127,7 @@ const ImageUploadWithWallet: React.FC = () => {
       marginBottom: 30,
     },
     commonButton: {
-      fontSize: '15px',
+      fontSize: 15,
       borderRadius: 8,
       cursor: 'pointer',
       fontWeight: 'bold',
@@ -166,6 +144,10 @@ const ImageUploadWithWallet: React.FC = () => {
     },
     sendButton: {
       backgroundColor: '#42a5f5',
+      color: '#fff',
+    },
+    clearButton: {
+      backgroundColor: '#757575',
       color: '#fff',
     },
     result: {
@@ -194,17 +176,6 @@ const ImageUploadWithWallet: React.FC = () => {
       fontWeight: 'bold',
       cursor: 'pointer',
     },
-    walletBtn: {
-      backgroundColor: '#4caf50',
-      color: '#fff',
-      padding: '12px 24px',
-      borderRadius: 8,
-      border: 'none',
-      cursor: 'pointer',
-      fontSize: '16px',
-      fontWeight: 'bold',
-      marginTop: 30,
-    },
     linkBtn: {
       position: 'absolute',
       top: -20,
@@ -223,6 +194,7 @@ const ImageUploadWithWallet: React.FC = () => {
       <button style={styles.linkBtn} onClick={() => navigate('/user')}>
         🔑 Мой кабинет
       </button>
+
       <img src={imagePreview || illustration} alt="Предпросмотр" style={styles.image} />
 
       <div style={styles.buttonRow}>
@@ -230,13 +202,46 @@ const ImageUploadWithWallet: React.FC = () => {
           Выбрать изображение
         </label>
         <input id="file-upload" type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
-
         {file && (
-          <button onClick={handleUpload} style={{ ...styles.commonButton, ...styles.sendButton }}>
-            📤 Отправить
-          </button>
+          <>
+            <button onClick={handleUpload} style={{ ...styles.commonButton, ...styles.sendButton }}>
+              📤 Отправить
+            </button>
+            <button
+              onClick={() => {
+                setFile(null);
+                setText('');
+                setError('');
+                setImagePreview(null);
+              }}
+              style={{ ...styles.commonButton, ...styles.clearButton }}
+            >
+              🧹 Очистить
+            </button>
+          </>
         )}
       </div>
+
+      <select
+        value={lang}
+        onChange={(e) => setLang(e.target.value)}
+        style={{
+          marginBottom: 20,
+          padding: 10,
+          borderRadius: 6,
+          border: '1px solid #ccc',
+          fontSize: 15,
+          width: '100%',
+          maxWidth: 400,
+        }}
+      >
+        <option value="eng">Английский</option>
+        <option value="rus">Русский</option>
+        <option value="ukr">Украинский</option>
+        <option value="deu">Немецкий</option>
+        <option value="ita">Итальянский</option>
+        <option value="spa">Испанский</option>
+      </select>
 
       <div style={styles.result}>
         {text && (
@@ -249,35 +254,40 @@ const ImageUploadWithWallet: React.FC = () => {
       </div>
 
       <p style={{ marginTop: 20 }}>
-        📦 Подписка: {subscribed ? <span style={{ color: 'green' }}>Активна ✅</span> : <span style={{ color: 'red' }}>Неактивна ❌</span>}
+        📦 Подписка:{' '}
+        {subscribed ? (
+          <span style={{ color: 'green' }}>Активна ✅</span>
+        ) : (
+          <span style={{ color: 'red' }}>Неактивна ❌</span>
+        )}
       </p>
 
       {!subscribed && (
-        <p>
-          🧪 Осталось попыток: <strong>{Math.max(0, MAX_ATTEMPTS - uploadCount)}</strong> из {MAX_ATTEMPTS}
-        </p>
-      )}
-
-      {!subscribed && (
-        <button onClick={handleSubscribe} style={styles.subscribeBtn}>
-          💳 Оплатить подписку
-        </button>
+        <>
+          <p>
+            🧪 Осталось попыток: <strong>{Math.max(0, MAX_ATTEMPTS - uploadCount)}</strong> из {MAX_ATTEMPTS}
+          </p>
+          <button onClick={handleSubscribe} style={styles.subscribeBtn}>
+            💳 Оплатить подписку
+          </button>
+        </>
       )}
 
       {!subscribed && uploadCount >= MAX_ATTEMPTS && (
         <button
           onClick={handleResetAttempts}
-          style={{ marginTop: 20, fontSize: 14, border: 'none', color: '#42a5f5', background: 'transparent', cursor: 'pointer' }}
+          style={{
+            marginTop: 20,
+            fontSize: 14,
+            border: 'none',
+            color: '#42a5f5',
+            background: 'transparent',
+            cursor: 'pointer',
+          }}
         >
           🔄 Я оплатил — сбросить попытки
         </button>
       )}
-
-      <button onClick={connect} style={styles.walletBtn}>
-        {walletAddress ? '🔗 Кошелек подключен' : '🔗 Подключить кошелек'}
-      </button>
-
-      {walletAddress && <p style={{ marginBottom: 20 }}>Адрес: {walletAddress}</p>}
     </div>
   );
 };

@@ -20,7 +20,7 @@ const CardPaymentButton: React.FC<CardPaymentButtonProps> = ({
 
     const body = {
       amount,
-      ccy: 400, // гривна
+      ccy: 980, // гривна
       redirectUrl: 'https://your-site.com/success',
       merchantPaymInfo: {
         reference,
