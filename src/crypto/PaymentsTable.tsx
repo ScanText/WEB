@@ -8,9 +8,9 @@ interface PaymentsTableProps {
 interface Payment {
   id: number;
   amount: number;
-  method: string;
   status: string;
-  created_at: string;
+  timestamp: string;
+  reference?: string;
 }
 
 const PaymentsTable: React.FC<PaymentsTableProps> = ({ login }) => {
@@ -18,7 +18,7 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({ login }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/payments?user_id=${login}`)
+    axios.get(`http://localhost:8000/admin/payments/by-user?login=${login}`)
       .then(res => {
         setPayments(res.data);
         setLoading(false);
@@ -42,13 +42,17 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({ login }) => {
             <tr>
               <th style={styles.th}>Дата</th>
               <th style={styles.th}>Сумма</th>
+              <th style={styles.th}>Статус</th>
+              <th style={styles.th}>Reference</th>
             </tr>
           </thead>
           <tbody>
             {payments.map(payment => (
               <tr key={payment.id}>
-                <td style={styles.td}>{new Date(payment.created_at).toLocaleString()}</td>
+                <td style={styles.td}>{new Date(payment.timestamp).toLocaleString()}</td>
                 <td style={styles.td}>{payment.amount} ₴</td>
+                <td style={styles.td}>{payment.status}</td>
+                <td style={styles.td}>{payment.reference || '-'}</td>
               </tr>
             ))}
           </tbody>
@@ -68,7 +72,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: '8px 12px',
     borderBottom: '1px solid #eee',
   },
-
 };
 
 export default PaymentsTable;

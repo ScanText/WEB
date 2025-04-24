@@ -20,6 +20,7 @@ const UserDashboard: React.FC = () => {
   const [hasSubscription, setHasSubscription] = useState<boolean>(false);
 
   const login = localStorage.getItem('loggedInUser') || '';
+  const userId = localStorage.getItem('user_id') || '';
   const isLoggedIn = !!login;
   const navigate = useNavigate();
 
@@ -36,15 +37,17 @@ const UserDashboard: React.FC = () => {
       })
       .catch((err) => console.error('Ошибка загрузки пользователя:', err));
 
-    axios.get(`http://localhost:8000/check_subscription?user_id=${login}`)
-      .then((res) => {
-        if (res.data.active) {
-          localStorage.setItem('subscription', 'true');
-          setHasSubscription(true);
-        }
-      })
-      .catch((err) => console.error('Ошибка проверки подписки:', err));
-  }, [login, isLoggedIn, navigate]);
+    if (userId) {
+      axios.get(`http://localhost:8000/check_subscription?user_id=${userId}`)
+        .then((res) => {
+          if (res.data.active) {
+            localStorage.setItem('subscription', 'true');
+            setHasSubscription(true);
+          }
+        })
+        .catch((err) => console.error('Ошибка проверки подписки:', err));
+    }
+  }, [login, userId, isLoggedIn, navigate]);
 
   return (
     <>
@@ -54,49 +57,49 @@ const UserDashboard: React.FC = () => {
           setUserPhoto={setUserPhoto}
         />
   
-          <h2>👤 Личный кабинет</h2>
-          {user ? (
-            <table style={styles.table}>
-              <tbody>
-                <tr>
-                  <td><strong>ID:</strong></td>
-                  <td>{user.id}</td>
-                </tr>
-                <tr>
-                  <td><strong>Логин:</strong></td>
-                  <td>{user.login}</td>
-                </tr>
-                <tr>
-                  <td><strong>Email:</strong></td>
-                  <td>{user.email}</td>
-                </tr>
-                <tr>
-                  <td><strong>Регистрация:</strong></td>
-                  <td>{new Date(user.registration_date).toLocaleString()}</td>
-                </tr>
-                <tr>
-                  <td><strong>Роль:</strong></td>
-                  <td>{user.role}</td>
-                </tr>
-              </tbody>
-            </table>
-          ) : (
-            <p>Загрузка данных...</p>
-          )}
+        <h2>👤 Личный кабинет</h2>
+        {user ? (
+          <table style={styles.table}>
+            <tbody>
+              <tr>
+                <td><strong>ID:</strong></td>
+                <td>{user.id}</td>
+              </tr>
+              <tr>
+                <td><strong>Логин:</strong></td>
+                <td>{user.login}</td>
+              </tr>
+              <tr>
+                <td><strong>Email:</strong></td>
+                <td>{user.email}</td>
+              </tr>
+              <tr>
+                <td><strong>Регистрация:</strong></td>
+                <td>{new Date(user.registration_date).toLocaleString()}</td>
+              </tr>
+              <tr>
+                <td><strong>Роль:</strong></td>
+                <td>{user.role}</td>
+              </tr>
+            </tbody>
+          </table>
+        ) : (
+          <p>Загрузка данных...</p>
+        )}
 
-          <div style={styles.subscriptionBox}>
-            <p>
-              💳 Подписка: {hasSubscription ? (
-                <span style={{ color: 'green' }}>Активна ✅</span>
-              ) : (
-                <span style={{ color: 'red' }}>Неактивна ❌</span>
-              )}
-            </p>
-            <div style={{ marginTop: 30, textAlign: 'center' }}>
-              <CardPaymentButton />
-            </div>
+        <div style={styles.subscriptionBox}>
+          <p>
+            💳 Подписка: {hasSubscription ? (
+              <span style={{ color: 'green' }}>Активна ✅</span>
+            ) : (
+              <span style={{ color: 'red' }}>Неактивна ❌</span>
+            )}
+          </p>
+          <div style={{ marginTop: 30, textAlign: 'center' }}>
+            <CardPaymentButton />
           </div>
-          <div style={styles.mainContent}>
+        </div>
+        <div style={styles.mainContent}>
           {user && <PaymentsTable login={user.login} />}
         </div>
       </div>

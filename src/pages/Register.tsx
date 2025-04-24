@@ -21,17 +21,24 @@ const Register: React.FC = () => {
       setError('Пароли не совпадают');
       return;
     }
-
+  
     try {
-      await axios.post('http://localhost:8000/user/register/', {
+      const response = await axios.post('http://localhost:8000/user/register', {
         login,
         email,
         password,
       });
-      navigate('/login');
-    } catch (err) {
+  
+      if (response.status === 200) {
+        navigate('/login');
+      }
+    } catch (err: any) {
       console.error(err);
-      setError('Ошибка регистрации. Попробуйте другой логин или email.');
+      if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
+      } else {
+        setError('Ошибка регистрации. Попробуйте другой логин или email.');
+      }
     }
   };
 

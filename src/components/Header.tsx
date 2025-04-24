@@ -1,36 +1,39 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import background from '../assets/header.png';
 
 interface HeaderProps {
   isLoggedIn: boolean;
-  login: string;
   hasSubscription: boolean;
   userPhoto?: string | null;
 }
 
-const Header: React.FC<HeaderProps> = ({
-  isLoggedIn,
-  login,
-  hasSubscription,
-  userPhoto,
-}) => {
+const Header: React.FC<HeaderProps> = ({ isLoggedIn, hasSubscription, userPhoto }) => {
   const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    const savedLogin = localStorage.getItem('loggedInUser');
+    if (savedLogin && savedLogin !== 'true' && savedLogin !== 'false') {
+      setUsername(savedLogin);
+    } else {
+      setUsername('');
+    }
+  }, [isLoggedIn]);
 
   const handleLogout = () => {
     localStorage.clear();
+    setUsername('');
     navigate('/login');
     window.location.reload();
   };
-
-  const displayName = login === 'true' || login === 'false' ? 'Пользователь' : login;
 
   return (
     <header style={{ ...styles.header, backgroundImage: `url(${background})` }}>
       <div style={styles.logo} onClick={() => navigate('/')}>ScanText</div>
       <div style={styles.promoTextBox}>
         <h1 style={styles.promoTitle}>Безлимитный онлайн-сервис скан-текста</h1>
-        <p style={styles.promoSubtitle}>Сканируйте изображение — извлекайте текст за секунды </p>
+        <p style={styles.promoSubtitle}>Сканируйте изображение — извлекайте текст за секунды</p>
       </div>
       <nav style={styles.nav}>
         <button onClick={() => navigate('/about')} style={styles.navBtn}>📊 О нас</button>
@@ -43,17 +46,21 @@ const Header: React.FC<HeaderProps> = ({
               alt="User"
               style={{ ...styles.avatar, filter: userPhoto ? 'none' : 'grayscale(100%)' }}
             />
-            <span style={styles.username}>{displayName}</span>
+            <span style={styles.username}>{username || 'Пользователь'}</span>
             <span>{hasSubscription ? '✅' : '❌'}</span>
             <button onClick={handleLogout} style={styles.logoutBtn}>Выйти</button>
-            {isLoggedIn && (
-              <button
-                onClick={() => navigate('/change-password')}
-                style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', marginLeft: 10 }}
-              >
-                🔁 Сменить пароль
-              </button>
-            )}
+            <button
+              onClick={() => navigate('/change-password')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#ccc',
+                cursor: 'pointer',
+                marginLeft: 10,
+              }}
+            >
+              🔁 Сменить пароль
+            </button>
           </div>
         )}
       </nav>
@@ -147,3 +154,4 @@ const styles: { [key: string]: React.CSSProperties } = {
 };
 
 export default Header;
+

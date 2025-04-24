@@ -21,8 +21,8 @@ const UserInfoBlock: React.FC = () => {
         </div>
 
         {[
-          ['Количество сканирований', '3 раза бесплатно', 'неограниченно', 'неограниченно'],
-          ['ИИ (ChatGPT)', '3 сообщения / день', 'неограниченно', 'неограниченно'],
+          ['Количество сканирований', '3 попытки', '100 попыток', 'Неограниченно'],
+          ['ИИ (ChatGPT)', '3 запроса / день', 'неограниченно', 'неограниченно'],
           ['Точность текста', 'Хорошая (Tesseract)', 'Максимальная (Google Vision)', 'Максимальная (Google Vision)'],
           ['Скорость', 'Быстрая', 'Очень быстрая', 'Мгновенная'],
           ['Без рекламы', '-', '✓', '✓'],
@@ -41,23 +41,17 @@ const UserInfoBlock: React.FC = () => {
           <div style={styles.cell}></div>
 
           <div style={styles.cell}>
-            <button style={styles.freeBtn} onClick={() => navigate('/')}>
-              Попробовать бесплатно
-            </button>
+            <button style={styles.freeBtn} onClick={() => navigate('/')}>Попробовать бесплатно</button>
           </div>
 
           <div style={styles.cell}>
             <CardPaymentButton amount={200} reference="sub-plus" />
-            <div style={styles.paymentNote}>
-              Пдписка: <strong>Plus200 грн</strong>
-            </div>
+            <div style={styles.paymentNote}>Подписка: <strong>Plus 200 грн</strong></div>
           </div>
 
           <div style={styles.cell}>
             <CardPaymentButton amount={400} reference="sub-premium" />
-            <div style={styles.paymentNote}>
-              Подписка: <strong>Premium 400 грн</strong>
-            </div>
+            <div style={styles.paymentNote}>Подписка: <strong>Premium 400 грн</strong></div>
           </div>
         </div>
       </div>

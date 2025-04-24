@@ -6,27 +6,53 @@ const PricingPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const subscribed = localStorage.getItem('subscription');
     const login = localStorage.getItem('loggedInUser');
+    if (!login) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
-    if (subscribed !== 'true' && login) {
-      fetch('http://localhost:8000/payments/activate', {
+  const handleActivateSubscription = async () => {
+    const login = localStorage.getItem('loggedInUser');
+    try {
+      const response = await fetch('http://localhost:8000/payments/activate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: login })
-      })
-        .then(() => {
-          localStorage.setItem('subscription', 'true');
-        })
-        .catch((err) => console.error('Ошибка активации подписки:', err));
+      });
+      if (response.ok) {
+        localStorage.setItem('subscription', 'true');
+        alert('✅ Подписка успешно активирована');
+      } else {
+        alert('❌ Не удалось активировать подписку');
+      }
+    } catch (err) {
+      console.error('Ошибка активации подписки:', err);
+      alert('⚠️ Ошибка сервера при активации подписки');
     }
-  }, []);
+  };
 
   return (
     <>
       <main style={{ padding: 30 }}>
         <h2>💼 Страница тарифов</h2>
         <UserInfoBlock />
+
+        <button
+          onClick={handleActivateSubscription}
+          style={{
+            marginTop: 16,
+            padding: '10px 16px',
+            backgroundColor: '#1976d2',
+            color: 'white',
+            border: 'none',
+            borderRadius: 6,
+            marginRight: 10
+          }}
+        >
+          💳 Активировать подписку вручную
+        </button>
+
         <button
           onClick={() => navigate('/user')}
           style={{

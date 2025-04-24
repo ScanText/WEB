@@ -12,8 +12,10 @@ const ImageUploadWithWallet: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadCount, setUploadCount] = useState<number>(0);
   const [subscribed, setSubscribed] = useState<boolean>(false);
+  const [lang, setLang] = useState<string>('eng');
+  const [userId, setUserId] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
   const navigate = useNavigate();
-  const [lang, setLang] = useState<string>('eng'); // язык по умолчанию
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -26,33 +28,41 @@ const ImageUploadWithWallet: React.FC = () => {
   };
 
   const handleUpload = async () => {
-    if (!file) return;
+    const uid = localStorage.getItem('user_id') || '';
+    const login = localStorage.getItem('loggedInUser') || '';
+    const plan = localStorage.getItem('subscriptionType') || 'free';
 
-    if (!subscribed && uploadCount >= MAX_ATTEMPTS) {
-      setError('💡 Вы использовали 3 бесплатные попытки. Пожалуйста, оформите подписку для продолжения.');
+    const MAX_LIMITS: Record<string, number> = {
+      free: 3,
+      plus: 100,
+      premium: Infinity,
+    };
+
+    if (!file || !uid || login === 'true' || login === 'false') {
+      setError('Ошибка авторизации. Попробуйте войти снова.');
+      return;
+    }
+
+    const limit = MAX_LIMITS[plan];
+    if (uploadCount >= limit) {
+      setError(`💡 Вы использовали все попытки по тарифу ${plan.toUpperCase()}. Пожалуйста, оформите подписку.`);
       return;
     }
 
     const formData = new FormData();
     formData.append('file', file);
     formData.append('lang', lang);
+    formData.append('user_id', uid);
+    formData.append('login', login);
 
     try {
-      const response = await axios.post(
-        'http://localhost:8000/tesseract-ocr',
-        formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      );
-
+      const response = await axios.post('http://localhost:8000/tesseract-ocr', formData);
       if (response.data?.text) {
         setText(response.data.text);
         setError('');
-
-        if (!subscribed) {
-          const newCount = uploadCount + 1;
-          setUploadCount(newCount);
-          localStorage.setItem('uploadCount', String(newCount));
-        }
+        const newCount = uploadCount + 1;
+        setUploadCount(newCount);
+        localStorage.setItem('uploadCount', String(newCount));
       } else {
         setText('');
         setError('Нет текста в ответе сервера.');
@@ -61,6 +71,61 @@ const ImageUploadWithWallet: React.FC = () => {
       console.error('Ошибка при загрузке:', err);
       setText('');
       setError('Ошибка при распознавании текста.');
+    }
+  };
+
+  const handleUploadGpt = async () => {
+    const uid = localStorage.getItem('user_id') || '';
+    const login = localStorage.getItem('loggedInUser') || '';
+
+    if (!file || !uid || login === 'true' || login === 'false') {
+      setError('Ошибка авторизации. Попробуйте войти снова.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('user_id', uid);
+    formData.append('login', login);
+
+    try {
+      const response = await axios.post('http://localhost:8000/gpt-ocr', formData);
+      if (response.data?.text) {
+        setText(response.data.text);
+        setError('');
+
+        const now = new Date();
+        const timestamp = now.toISOString().replace(/[:.]/g, '-');
+        const blob = new Blob(['\uFEFF' + response.data.text], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const filename = `gpt_text_${timestamp}.txt`;
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = filename;
+        downloadLink.click();
+
+        const plan = localStorage.getItem('subscriptionType') || 'free';
+        const MAX_LIMITS: Record<string, number> = {
+          free: 3,
+          plus: 100,
+          premium: Infinity,
+        };
+
+        const limit = MAX_LIMITS[plan];
+        if (uploadCount < limit) {
+          const newCount = uploadCount + 1;
+          setUploadCount(newCount);
+          localStorage.setItem('uploadCount', String(newCount));
+        }
+      } else {
+        setText('');
+        setError('Нет текста в ответе от GPT.');
+      }
+    } catch (err) {
+      console.error('GPT-OCR ошибка:', err);
+      setText('');
+      setError('Ошибка при распознавании через GPT.');
     }
   };
 
@@ -75,21 +140,23 @@ const ImageUploadWithWallet: React.FC = () => {
   };
 
   useEffect(() => {
-    const user = localStorage.getItem('loggedInUser') || 'guest';
+    const id = localStorage.getItem('user_id') || '';
+    const login = localStorage.getItem('loggedInUser') || '';
+    setUserId(id);
+    setUsername(login);
+
     const previousUser = localStorage.getItem('previousUser');
 
-    if (previousUser && previousUser !== user) {
+    if (previousUser && previousUser !== login) {
       localStorage.setItem('uploadCount', '0');
       localStorage.setItem('subscription', 'false');
       localStorage.removeItem('selectedPlan');
     }
 
-    localStorage.setItem('previousUser', user);
-
+    localStorage.setItem('previousUser', login);
     const rawCount = localStorage.getItem('uploadCount');
     const parsedCount = parseInt(rawCount || '0');
     setUploadCount(isNaN(parsedCount) ? 0 : parsedCount);
-
     setSubscribed(localStorage.getItem('subscription') === 'true');
   }, []);
 
@@ -99,7 +166,6 @@ const ImageUploadWithWallet: React.FC = () => {
       setUploadCount(isNaN(count) ? 0 : count);
       setSubscribed(localStorage.getItem('subscription') === 'true');
     };
-
     window.addEventListener('focus', checkSubscription);
     return () => window.removeEventListener('focus', checkSubscription);
   }, []);
@@ -187,6 +253,14 @@ const ImageUploadWithWallet: React.FC = () => {
       cursor: 'pointer',
       textDecoration: 'underline',
     },
+    previewLinks: {
+      marginBottom: 20,
+    },
+    link: {
+      color: '#3f51b5',
+      marginRight: 10,
+      textDecoration: 'none'
+    }
   };
 
   return (
@@ -194,47 +268,28 @@ const ImageUploadWithWallet: React.FC = () => {
       <button style={styles.linkBtn} onClick={() => navigate('/user')}>
         🔑 Мой кабинет
       </button>
+      <p style={{ fontSize: 12, color: '#aaa' }}>ID: {userId}</p>
+      <p style={{ fontSize: 12, color: '#aaa' }}>👤 Пользователь: {username}</p>
 
       <img src={imagePreview || illustration} alt="Предпросмотр" style={styles.image} />
-
+      {imagePreview && (
+        <div style={styles.previewLinks}>
+          <a href={imagePreview} download="scan.jpg" style={styles.link}>📥 Скачать изображение</a>
+          <a href={imagePreview} target="_blank" rel="noopener noreferrer" style={styles.link}>🖼 Открыть изображение</a>
+        </div>
+      )}
       <div style={styles.buttonRow}>
-        <label htmlFor="file-upload" style={{ ...styles.commonButton, ...styles.uploadButton }}>
-          Выбрать изображение
-        </label>
+        <label htmlFor="file-upload" style={{ ...styles.commonButton, ...styles.uploadButton }}>Выбрать изображение</label>
         <input id="file-upload" type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
         {file && (
           <>
-            <button onClick={handleUpload} style={{ ...styles.commonButton, ...styles.sendButton }}>
-              📤 Отправить
-            </button>
-            <button
-              onClick={() => {
-                setFile(null);
-                setText('');
-                setError('');
-                setImagePreview(null);
-              }}
-              style={{ ...styles.commonButton, ...styles.clearButton }}
-            >
-              🧹 Очистить
-            </button>
+            <button onClick={handleUpload} style={{ ...styles.commonButton, ...styles.sendButton }}>📤 Tesseract OCR</button>
+            <button onClick={handleUploadGpt} style={{ ...styles.commonButton, backgroundColor: '#8e24aa', color: '#fff' }}>🤖 GPT Распознать</button>
+            <button onClick={() => { setFile(null); setText(''); setError(''); setImagePreview(null); }} style={{ ...styles.commonButton, ...styles.clearButton }}>🧹 Очистить</button>
           </>
         )}
       </div>
-
-      <select
-        value={lang}
-        onChange={(e) => setLang(e.target.value)}
-        style={{
-          marginBottom: 20,
-          padding: 10,
-          borderRadius: 6,
-          border: '1px solid #ccc',
-          fontSize: 15,
-          width: '100%',
-          maxWidth: 400,
-        }}
-      >
+      <select value={lang} onChange={(e) => setLang(e.target.value)} style={{ marginBottom: 20, padding: 10, borderRadius: 6, border: '1px solid #ccc', fontSize: 15, width: '100%', maxWidth: 400 }}>
         <option value="eng">Английский</option>
         <option value="rus">Русский</option>
         <option value="ukr">Украинский</option>
@@ -242,51 +297,46 @@ const ImageUploadWithWallet: React.FC = () => {
         <option value="ita">Итальянский</option>
         <option value="spa">Испанский</option>
       </select>
-
-      <div style={styles.result}>
-        {text && (
-          <>
-            <h3>📝 Распознанный текст:</h3>
-            <pre style={styles.text}>{text}</pre>
-          </>
-        )}
-        {error && <p style={styles.error}>{error}</p>}
-      </div>
-
-      <p style={{ marginTop: 20 }}>
-        📦 Подписка:{' '}
-        {subscribed ? (
-          <span style={{ color: 'green' }}>Активна ✅</span>
-        ) : (
-          <span style={{ color: 'red' }}>Неактивна ❌</span>
-        )}
-      </p>
-
+      {text && (
+        <div style={styles.result}>
+          <h3>📝 Распознанный текст:</h3>
+          <pre style={styles.text}>{text}</pre>
+        </div>
+      )}
+      {error && <p style={styles.error}>{error}</p>}
+      <p style={{ marginTop: 20 }}>📦 Подписка:{' '}{subscribed ? (<span style={{ color: 'green' }}>Активна ✅</span>) : (<span style={{ color: 'red' }}>Неактивна ❌</span>)}</p>
       {!subscribed && (
         <>
-          <p>
-            🧪 Осталось попыток: <strong>{Math.max(0, MAX_ATTEMPTS - uploadCount)}</strong> из {MAX_ATTEMPTS}
-          </p>
-          <button onClick={handleSubscribe} style={styles.subscribeBtn}>
-            💳 Оплатить подписку
-          </button>
+          <p>🧪 Осталось попыток: <strong>{Math.max(0, MAX_ATTEMPTS - uploadCount)}</strong> из {MAX_ATTEMPTS}</p>
+          <button onClick={handleSubscribe} style={styles.subscribeBtn}>💳 Оплатить подписку</button>
         </>
       )}
-
       {!subscribed && uploadCount >= MAX_ATTEMPTS && (
-        <button
-          onClick={handleResetAttempts}
-          style={{
-            marginTop: 20,
-            fontSize: 14,
-            border: 'none',
-            color: '#42a5f5',
-            background: 'transparent',
-            cursor: 'pointer',
-          }}
-        >
+        <button onClick={handleResetAttempts} style={{ marginTop: 20, fontSize: 14, border: 'none', color: '#42a5f5', background: 'transparent', cursor: 'pointer' }}>
           🔄 Я оплатил — сбросить попытки
         </button>
+      )}
+
+      {text && (
+        <div style={{ marginTop: 10 }}>
+          {(() => {
+            const blob = new Blob(['\uFEFF' + text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const now = new Date();
+            const timestamp = now.toISOString().replace(/[:.]/g, '-');
+            const filename = `text_${timestamp}.txt`;
+            return (
+              <>
+                <a href={url} download={filename} style={{ marginRight: 12, textDecoration: 'none', color: '#3f51b5' }}>
+                  📥 Скачать текст
+                </a>
+                <a href={url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#3f51b5' }}>
+                  📝 Открыть в новой вкладке
+                </a>
+              </>
+            );
+          })()}
+        </div>
       )}
     </div>
   );

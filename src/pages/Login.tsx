@@ -6,7 +6,7 @@ import worldMap from '../assets/map.png';
 import { GoogleLogin } from '@react-oauth/google';
 
 interface LoginProps {
-  onLogin: () => void;
+  onLogin: (username: string) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
@@ -15,7 +15,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // === Обычный логин (логин/пароль) ===
   const handleLogin = async () => {
     try {
       const response = await axios.post('http://localhost:8000/user/login', {
@@ -25,17 +24,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
       const { id: user_id, login: userLogin, role } = response.data;
 
-      const prevUser = localStorage.getItem('loggedInUser');
-      if (prevUser !== userLogin) {
-        localStorage.setItem('uploadCount', '0');
-        localStorage.setItem('subscription', 'false');
-      }
-
       localStorage.setItem('user_id', String(user_id));
       localStorage.setItem('loggedInUser', userLogin);
       localStorage.setItem('role', role || 'user');
+      localStorage.setItem('subscription', 'false');
+      localStorage.setItem('subscriptionType', 'free');
 
-      onLogin();
+      onLogin(userLogin); // передаём логин
       navigate('/');
       window.location.reload();
     } catch (err) {
@@ -44,32 +39,34 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }
   };
 
-  // === Авторизация через Google БЕЗ бэкенда (только фронт) ===
   const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
       const idToken = credentialResponse.credential;
-      
-      // 1) Проверяем токен напрямую на серверах Google:
-      //    https://oauth2.googleapis.com/tokeninfo?id_token=...
-      
       const verifyUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`;
       const verifyRes = await fetch(verifyUrl);
+
       if (!verifyRes.ok) {
         throw new Error('Token verification failed');
       }
+
       const googleData = await verifyRes.json();
-      // console.log('Google token info:', googleData);
-      // googleData содержит поля: email, sub, name, picture, и т.п.
+      const userEmail = googleData.email || 'guest@gmail.com';
 
-      // 2) Считаем, что это "наш вошедший пользователь"
-      const userEmail = googleData.email || 'unknown@gmail.com';
+      const prevUser = localStorage.getItem('loggedInUser');
+      if (prevUser !== userEmail) {
+        localStorage.setItem('uploadCount', '0');
+        localStorage.setItem('subscription', 'false');
+        localStorage.setItem('subscriptionType', 'free');
+        localStorage.removeItem('selectedPlan');
+      }
 
-      // 3) Сохраняем что-то в localStorage (вместо реального user_id)
       localStorage.setItem('loggedInUser', userEmail);
+      localStorage.setItem('user_id', '0');
       localStorage.setItem('role', 'user');
-      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('subscriptionType', 'free');
+      localStorage.setItem('subscription', 'false');
 
-      onLogin();
+      onLogin(userEmail); // исправлено: передаём email
       navigate('/');
       window.location.reload();
     } catch (err) {
@@ -79,7 +76,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   const handleGoogleError = () => {
-    console.log('Login with Google failed');
+    console.error('Ошибка входа через Google');
     setError('Не удалось авторизоваться через Google');
   };
 
@@ -89,7 +86,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <div style={styles.welcomeBox}>
           <h2 style={styles.welcomeTitle}>Добро пожаловать :)</h2>
           <p style={styles.welcomeText}>
-            После входа в систему у вас будет возможность трех бесплатных 
+            После входа в систему у вас будет возможность трех бесплатных
             попыток распознавания текста с изображения
             и вы сможете подписаться на уведомления о новых функциях и скидках.
           </p>
@@ -119,14 +116,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         >
           Зарегистрироваться
         </button>
-        
+
         <div style={{ marginTop: 20 }}>
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleError}
           />
         </div>
-      
+
         {error && <p style={styles.error}>{error}</p>}
       </div>
     </div>

@@ -12,9 +12,11 @@ const CardPaymentButton: React.FC<CardPaymentButtonProps> = ({
   reference = `order-${Date.now()}`
 }) => {
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   const handlePay = async () => {
     setLoading(true);
+    setMessage(null);
 
     const token = 'uTxwJZS40IeHwlzBmz2FkAh-i5UvDx9Lcpe2hQlfTssI';
 
@@ -22,6 +24,7 @@ const CardPaymentButton: React.FC<CardPaymentButtonProps> = ({
       amount,
       ccy: 980, // гривна
       redirectUrl: 'https://your-site.com/success',
+      callbackUrl: 'https://api-server.com/payments/callback',
       merchantPaymInfo: {
         reference,
         destination: 'Оплата подписки через ScanText',
@@ -45,6 +48,7 @@ const CardPaymentButton: React.FC<CardPaymentButtonProps> = ({
       // Отправка письма
       await sendReceipt(reference, amount);
 
+      // Открытие страницы оплаты
       if (invoiceUrl) {
         window.open(invoiceUrl, '_blank');
       } else {
@@ -71,20 +75,29 @@ const CardPaymentButton: React.FC<CardPaymentButtonProps> = ({
         },
         '4cv9_5LTsfunNwIdS'
       );
+      setMessage('📩 Письмо успешно отправлено!');
     } catch (err) {
       console.error('Ошибка отправки письма:', err);
+      setMessage('❌ Ошибка при отправке письма');
     }
   };
 
   return (
-    <button
-      className="pay-button"
-      onClick={handlePay}
-      disabled={loading}
-      style={{ backgroundColor: '#facc15', color: '#000' }}
-    >
-      {loading ? 'Создание счёта...' : '💳 Оплатить по карте'}
-    </button>
+    <div style={{ marginTop: 10 }}>
+      <button
+        className="pay-button"
+        onClick={handlePay}
+        disabled={loading}
+        style={{ backgroundColor: '#facc15', color: '#000', padding: '10px 20px', borderRadius: 8 }}
+      >
+        {loading ? 'Создание счёта...' : '💳 Оплатить по карте'}
+      </button>
+      {message && (
+        <div style={{ marginTop: 8, fontSize: 14, color: message.startsWith('📩') ? 'green' : 'red' }}>
+          {message}
+        </div>
+      )}
+    </div>
   );
 };
 

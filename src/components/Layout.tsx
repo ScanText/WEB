@@ -9,9 +9,8 @@ interface Props {
 const Layout: React.FC<Props> = ({ children }) => {
   return (
     <div style={styles.wrapper}>
-      <Header
+     <Header
         isLoggedIn={!!localStorage.getItem('loggedInUser')}
-        login={localStorage.getItem('loggedInUser') || ''}
         hasSubscription={localStorage.getItem('subscription') === 'true'}
         userPhoto={localStorage.getItem('userPhoto') || null}
       />
