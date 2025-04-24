@@ -109,6 +109,20 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ userPhoto, setUserPhoto }) =>
         >
           🔑 Изменить пароль
         </button>
+        <button
+          onClick={() => navigate('/user/history')}
+          style={{
+            backgroundColor: '#225250', // светло-фиолетовый
+            color: '#fff',
+            padding: '10px 16px',
+            fontSize: 14,
+            borderRadius: 8,
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          🔑 История сканирований
+        </button>
       </div>     
     </div>
   );

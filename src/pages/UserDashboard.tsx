@@ -20,9 +20,11 @@ const UserDashboard: React.FC = () => {
   const [hasSubscription, setHasSubscription] = useState<boolean>(false);
 
   const login = localStorage.getItem('loggedInUser') || '';
-  const userId = localStorage.getItem('user_id') || '';
+  //const userId = localStorage.getItem('user_id') || '';
   const isLoggedIn = !!login;
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -30,24 +32,25 @@ const UserDashboard: React.FC = () => {
       return;
     }
 
-    axios.get(`http://localhost:8000/user_info/${login}`)
+    axios.get(`http://localhost:8000/user/user_info/${login}`) 
+    
+    //TODO
+
+    // в API прописать в роуте user -> @router.get("/user_info/{login}", response_model=UserOut)
+   /* def get_user_info(login: str, db: Session = Depends(get_db)):
+        user = user_crud.get_user_by_login(db, login)
+        if not user:
+            raise HTTPException(status_code=404, detail="Пользователь не найден")
+        return user*/
+
       .then((res) => {
         setUser(res.data);
         setHasSubscription(res.data.subscription_status);
       })
-      .catch((err) => console.error('Ошибка загрузки пользователя:', err));
+      .catch((err) => console.error('Ошибка загрузки пользователя:', err))
+      .finally(() => setLoading(false));
 
-    if (userId) {
-      axios.get(`http://localhost:8000/check_subscription?user_id=${userId}`)
-        .then((res) => {
-          if (res.data.active) {
-            localStorage.setItem('subscription', 'true');
-            setHasSubscription(true);
-          }
-        })
-        .catch((err) => console.error('Ошибка проверки подписки:', err));
-    }
-  }, [login, userId, isLoggedIn, navigate]);
+  }, [login, isLoggedIn, navigate]);
 
   return (
     <>
@@ -57,35 +60,15 @@ const UserDashboard: React.FC = () => {
           setUserPhoto={setUserPhoto}
         />
   
-        <h2>👤 Личный кабинет</h2>
-        {user ? (
-          <table style={styles.table}>
-            <tbody>
-              <tr>
-                <td><strong>ID:</strong></td>
-                <td>{user.id}</td>
-              </tr>
-              <tr>
-                <td><strong>Логин:</strong></td>
-                <td>{user.login}</td>
-              </tr>
-              <tr>
-                <td><strong>Email:</strong></td>
-                <td>{user.email}</td>
-              </tr>
-              <tr>
-                <td><strong>Регистрация:</strong></td>
-                <td>{new Date(user.registration_date).toLocaleString()}</td>
-              </tr>
-              <tr>
-                <td><strong>Роль:</strong></td>
-                <td>{user.role}</td>
-              </tr>
-            </tbody>
-          </table>
-        ) : (
-          <p>Загрузка данных...</p>
-        )}
+  {user ? (
+  <>
+    <h2>👤 Добро пожаловать, {user.login}!</h2>
+  </>
+) : loading ? (
+  <p>Загрузка данных пользователя...</p>
+) : (
+  <p style={{ color: 'red' }}>Не удалось загрузить данные пользователя.</p>
+)}
 
         <div style={styles.subscriptionBox}>
           <p>

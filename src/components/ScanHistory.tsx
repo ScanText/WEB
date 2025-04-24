@@ -33,11 +33,8 @@ const ScanHistory: React.FC = () => {
   return (
     <div style={{ padding: 20 }}>
       <h2>🕓 История сканирований</h2>
-      <p style={{ fontStyle: 'italic', marginBottom: 10 }}>Пользователь: <strong>{userLogin}</strong></p>
       {loading ? (
         <p>Загрузка...</p>
-      ) : history.length === 0 ? (
-        <p>Нет сохранённых сканирований.</p>
       ) : (
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
