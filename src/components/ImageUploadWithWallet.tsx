@@ -56,7 +56,7 @@ const ImageUploadWithWallet: React.FC = () => {
     formData.append('login', login);
 
     try {
-      const response = await axios.post('http://localhost:8000/tesseract-ocr', formData);
+      const response = await axios.post('http://fastapitext-black-feather-5039.fly.dev', formData);
       if (response.data?.text) {
         setText(response.data.text);
         setError('');
