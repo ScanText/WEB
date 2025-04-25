@@ -12,6 +12,8 @@ interface User {
   registration_date: string;
   subscription_status: boolean;
   role: string;
+  subscription_type: string;
+  remaining_scans: number;
 }
 
 const UserDashboard: React.FC = () => {
@@ -20,9 +22,9 @@ const UserDashboard: React.FC = () => {
   const [hasSubscription, setHasSubscription] = useState<boolean>(false);
 
   const login = localStorage.getItem('loggedInUser') || '';
-  const userId = localStorage.getItem('user_id') || '';
   const isLoggedIn = !!login;
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -30,110 +32,140 @@ const UserDashboard: React.FC = () => {
       return;
     }
 
-    axios.get(`http://localhost:8000/user_info/${login}`)
+    axios.get(`http://localhost:8000/user/user_info/${login}`)
       .then((res) => {
         setUser(res.data);
-        setHasSubscription(res.data.subscription_status);
+        setHasSubscription(res.data.subscription_type !== 'none');
       })
-      .catch((err) => console.error('Ошибка загрузки пользователя:', err));
-
-    if (userId) {
-      axios.get(`http://localhost:8000/check_subscription?user_id=${userId}`)
-        .then((res) => {
-          if (res.data.active) {
-            localStorage.setItem('subscription', 'true');
-            setHasSubscription(true);
-          }
-        })
-        .catch((err) => console.error('Ошибка проверки подписки:', err));
-    }
-  }, [login, userId, isLoggedIn, navigate]);
+      .catch((err) => console.error('Ошибка загрузки пользователя:', err))
+      .finally(() => setLoading(false));
+  }, [login, isLoggedIn, navigate]);
 
   return (
-    <>
-      <div style={styles.container}>
-        <UserSidebar
-          userPhoto={userPhoto}
-          setUserPhoto={setUserPhoto}
-        />
-  
-        <h2>👤 Личный кабинет</h2>
-        {user ? (
-          <table style={styles.table}>
-            <tbody>
-              <tr>
-                <td><strong>ID:</strong></td>
-                <td>{user.id}</td>
-              </tr>
-              <tr>
-                <td><strong>Логин:</strong></td>
-                <td>{user.login}</td>
-              </tr>
-              <tr>
-                <td><strong>Email:</strong></td>
-                <td>{user.email}</td>
-              </tr>
-              <tr>
-                <td><strong>Регистрация:</strong></td>
-                <td>{new Date(user.registration_date).toLocaleString()}</td>
-              </tr>
-              <tr>
-                <td><strong>Роль:</strong></td>
-                <td>{user.role}</td>
-              </tr>
-            </tbody>
-          </table>
-        ) : (
-          <p>Загрузка данных...</p>
-        )}
+    <div style={styles.container}>
+      <UserSidebar
+        userPhoto={userPhoto}
+        setUserPhoto={setUserPhoto}
+      />
 
-        <div style={styles.subscriptionBox}>
-          <p>
-            💳 Подписка: {hasSubscription ? (
-              <span style={{ color: 'green' }}>Активна ✅</span>
-            ) : (
-              <span style={{ color: 'red' }}>Неактивна ❌</span>
-            )}
-          </p>
-          <div style={{ marginTop: 30, textAlign: 'center' }}>
-            <CardPaymentButton />
+<div style={styles.rightColumn}>
+      {user ? (
+        <>
+          <div style={styles.welcomeBox}>
+            <h2>👤 Добро пожаловать, {user.login}!</h2>
           </div>
-        </div>
-        <div style={styles.mainContent}>
-          {user && <PaymentsTable login={user.login} />}
-        </div>
-      </div>
-    </>
+
+          <div style={styles.subscriptionBox}>
+            <div style={styles.statLine}>
+              <span style={styles.label}>📦 Тариф:</span>
+              <span style={styles.value1}>{user.subscription_type}</span>
+            </div>
+            <div style={styles.statLine}>
+              <span style={styles.label}>🔢 Осталось сканов:</span>
+              <span style={styles.value2}>{user.remaining_scans}</span>
+            </div>
+            <div style={styles.statLine}>
+              <span style={styles.label}>💳 Подписка:</span>
+              <span style={hasSubscription ? styles.active : styles.inactive}>
+                {hasSubscription ? 'Активна ✅' : 'Неактивна ❌'}
+              </span>
+            </div>
+
+            <div style={{ marginTop: 30, textAlign: 'center' }}>
+              <button
+                onClick={() => navigate('/pricing')}
+                style={{
+                  backgroundColor: '#8919e6',
+                  color: '#fff',
+                  padding: '10px 16px',
+                  fontSize: 14,
+                  borderRadius: 8,
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                💳 Изменить тарифный план
+              </button>
+            </div>
+          </div>
+
+          <div style={styles.paymentHistoryBox}>
+            <PaymentsTable login={user.login} />
+          </div>
+        </>
+      ) : loading ? (
+        <p>Загрузка данных пользователя...</p>
+      ) : (
+        <p style={{ color: 'red' }}>Не удалось загрузить данные пользователя.</p>
+      )}
+    </div>
+    </div>
   );
 };
 
-const styles: { [key: string]: React.CSSProperties } = {
+export default UserDashboard;
+
+const styles = {
   container: {
     display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    padding: 40,
-    fontFamily: 'Segoe UI, sans-serif',
+    flexDirection: 'row' as const,
+    padding: 20,
+    fontFamily: 'sans-serif',
+    alignItems: 'flex-start',
   },
-  mainContent: {
+  rightColumn: {
     flex: 1,
-    maxWidth: 640,
-    marginTop: 20,
-    backgroundColor: '#fff',
-    padding: 30,
-    borderRadius: 12,
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: 30,
   },
-  table: {
+  welcomeBox: {
     width: '100%',
-    borderCollapse: 'collapse',
-    marginBottom: 30,
+    backgroundColor: '#fff',
+    padding: '20px 30px',
+    borderRadius: 10,
+    fontSize: 22,
+    fontWeight: 600,
+   // border: '1px solid #ddd',
+    color: '#222',
   },
   subscriptionBox: {
-    backgroundColor: '#f9f9f9',
     padding: 20,
+    border: '1px solid #ccc',
     borderRadius: 10,
+    backgroundColor: '#f9f9f9',
+    width: '100%',
+  },
+  paymentHistoryBox: {
+    padding: 20,
+    border: '1px solid #ccc',
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    width: '100%',
+  },
+  statLine: {
+    padding: '8px 0',
+    fontSize: 18,
+    fontWeight: 500,
+  },
+  label: {
+    marginRight: 8,
+    color: '#333',
+  },
+  value1: {
+    fontWeight: 600,
+    color: 'green',
+  },
+  value2: {
+    fontWeight: 600,
+    color: 'blue',
+  },
+  active: {
+    color: 'green',
+    fontWeight: 600,
+  },
+  inactive: {
+    color: 'red',
+    fontWeight: 600,
   },
 };
-
-export default UserDashboard;

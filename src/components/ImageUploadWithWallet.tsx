@@ -6,6 +6,15 @@ import illustration from '../assets/1.jpg';
 const MAX_ATTEMPTS = 3;
 
 const ImageUploadWithWallet: React.FC = () => {
+
+  interface UploadItem {
+    id: number;
+    filename: string;
+    file_url: string;
+    recognized_text?: string;
+    uploaded_at: string;
+  }
+
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -16,6 +25,15 @@ const ImageUploadWithWallet: React.FC = () => {
   const [userId, setUserId] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const navigate = useNavigate();
+  const [uploads, setUploads] = useState<UploadItem[]>([]);
+  const [login, setLogin] = useState(localStorage.getItem('loggedInUser') || '');
+  const [subscriptionType, setSubscriptionType] = useState(localStorage.getItem('subscriptionType') || '');
+  const [remainingScans, setRemainingScans] = useState<number | null>(
+    localStorage.getItem('remainingScans') !== null
+      ? Number(localStorage.getItem('remainingScans'))
+      : null
+  );
+  const [recognizedText, setRecognizedText] = useState('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -26,7 +44,64 @@ const ImageUploadWithWallet: React.FC = () => {
       setImagePreview(URL.createObjectURL(selected));
     }
   };
+  const scanImage = async (upload_id: number) => {
+    const formData = new FormData();
+    formData.append('upload_id', upload_id.toString());
 
+    try {
+      const res = await axios.post('http://localhost:8000/upload/scan', formData);
+      const { recognized_text, subscription_type, remaining_scans } = res.data;
+
+      setRecognizedText(recognized_text);
+      setSubscriptionType(subscription_type);
+      setRemainingScans(remaining_scans);
+
+      localStorage.setItem('subscriptionType', subscription_type);
+      localStorage.setItem('remainingScans', String(remaining_scans));
+
+      fetchUploads();
+    } catch (err) {
+      console.error('❌ Ошибка сканирования:', err);
+    }
+  };
+  const fetchUploads = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8000/upload/uploads/by-user?login=${login}`);
+      setUploads(res.data);
+    } catch (err) {
+      console.error('❌ Ошибка получения истории:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (login) {
+      fetchUploads();
+    }
+  }, [login]);
+
+
+
+
+  const uploadImage = async () => {
+    if (!file || !login) {
+      console.warn('⛔ Файл или логин отсутствует');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('login', login);
+
+    try {
+      const res = await axios.post('http://localhost:8000/upload/upload-image', formData);
+      const { upload_id } = res.data;
+      console.log('✅ Загружен файл:', upload_id);
+      scanImage(upload_id);
+    } catch (err) {
+      console.error('❌ Ошибка загрузки:', err);
+    }
+  };
+/*
   const handleUpload = async () => {
     const uid = localStorage.getItem('user_id') || '';
     const login = localStorage.getItem('loggedInUser') || '';
@@ -128,7 +203,7 @@ const ImageUploadWithWallet: React.FC = () => {
       setError('Ошибка при распознавании через GPT.');
     }
   };
-
+*/
   const handleResetAttempts = () => {
     localStorage.setItem('uploadCount', '0');
     setUploadCount(0);
@@ -170,106 +245,14 @@ const ImageUploadWithWallet: React.FC = () => {
     return () => window.removeEventListener('focus', checkSubscription);
   }, []);
 
-  const styles: { [key: string]: React.CSSProperties } = {
-    container: {
-      padding: 40,
-      maxWidth: 600,
-      margin: '0 auto',
-      fontFamily: 'Segoe UI, sans-serif',
-      textAlign: 'center',
-      position: 'relative',
-    },
-    image: {
-      width: '100%',
-      maxHeight: 350,
-      objectFit: 'contain',
-      borderRadius: 12,
-      marginBottom: 16,
-    },
-    buttonRow: {
-      display: 'flex',
-      justifyContent: 'center',
-      gap: 10,
-      marginBottom: 30,
-    },
-    commonButton: {
-      fontSize: 15,
-      borderRadius: 8,
-      cursor: 'pointer',
-      fontWeight: 'bold',
-      width: 180,
-      height: 44,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      border: 'none',
-    },
-    uploadButton: {
-      backgroundColor: '#5c6bc0',
-      color: '#fff',
-    },
-    sendButton: {
-      backgroundColor: '#42a5f5',
-      color: '#fff',
-    },
-    clearButton: {
-      backgroundColor: '#757575',
-      color: '#fff',
-    },
-    result: {
-      marginTop: 40,
-      textAlign: 'left',
-    },
-    text: {
-      background: '#f9f9f9',
-      padding: 16,
-      borderRadius: 8,
-      fontSize: '16px',
-      whiteSpace: 'pre-wrap',
-    },
-    error: {
-      color: 'red',
-      fontSize: '16px',
-      marginTop: 15,
-    },
-    subscribeBtn: {
-      marginTop: 10,
-      backgroundColor: '#ff9800',
-      padding: '10px 20px',
-      border: 'none',
-      borderRadius: 8,
-      color: '#fff',
-      fontWeight: 'bold',
-      cursor: 'pointer',
-    },
-    linkBtn: {
-      position: 'absolute',
-      top: -20,
-      right: 0,
-      background: 'transparent',
-      border: 'none',
-      color: '#4caf50',
-      fontSize: 14,
-      cursor: 'pointer',
-      textDecoration: 'underline',
-    },
-    previewLinks: {
-      marginBottom: 20,
-    },
-    link: {
-      color: '#3f51b5',
-      marginRight: 10,
-      textDecoration: 'none'
-    }
-  };
+  
 
   return (
     <div style={styles.container}>
       <button style={styles.linkBtn} onClick={() => navigate('/user')}>
         🔑 Мой кабинет
       </button>
-      <p style={{ fontSize: 12, color: '#aaa' }}>ID: {userId}</p>
-      <p style={{ fontSize: 12, color: '#aaa' }}>👤 Пользователь: {username}</p>
+     
 
       <img src={imagePreview || illustration} alt="Предпросмотр" style={styles.image} />
       {imagePreview && (
@@ -283,13 +266,14 @@ const ImageUploadWithWallet: React.FC = () => {
         <input id="file-upload" type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
         {file && (
           <>
-            <button onClick={handleUpload} style={{ ...styles.commonButton, ...styles.sendButton }}>📤 Tesseract OCR</button>
-            <button onClick={handleUploadGpt} style={{ ...styles.commonButton, backgroundColor: '#8e24aa', color: '#fff' }}>🤖 GPT Распознать</button>
+            <button onClick={uploadImage} style={{ ...styles.commonButton, ...styles.sendButton }}>📤 Сканировать</button>
+           
             <button onClick={() => { setFile(null); setText(''); setError(''); setImagePreview(null); }} style={{ ...styles.commonButton, ...styles.clearButton }}>🧹 Очистить</button>
           </>
         )}
       </div>
-      <select value={lang} onChange={(e) => setLang(e.target.value)} style={{ marginBottom: 20, padding: 10, borderRadius: 6, border: '1px solid #ccc', fontSize: 15, width: '100%', maxWidth: 400 }}>
+      {/*
+     <select value={lang} onChange={(e) => setLang(e.target.value)} style={{ marginBottom: 20, padding: 10, borderRadius: 6, border: '1px solid #ccc', fontSize: 15, width: '100%', maxWidth: 400 }}>
         <option value="eng">Английский</option>
         <option value="rus">Русский</option>
         <option value="ukr">Украинский</option>
@@ -297,20 +281,22 @@ const ImageUploadWithWallet: React.FC = () => {
         <option value="ita">Итальянский</option>
         <option value="spa">Испанский</option>
       </select>
-      {text && (
-        <div style={styles.result}>
-          <h3>📝 Распознанный текст:</h3>
-          <pre style={styles.text}>{text}</pre>
+      */}
+      {recognizedText && (
+        <div>
+          <h2>📑 Распознанный текст:</h2>
+          <p>{recognizedText}</p>
         </div>
       )}
       {error && <p style={styles.error}>{error}</p>}
-      <p style={{ marginTop: 20 }}>📦 Подписка:{' '}{subscribed ? (<span style={{ color: 'green' }}>Активна ✅</span>) : (<span style={{ color: 'red' }}>Неактивна ❌</span>)}</p>
-      {!subscribed && (
+      <p style={{ marginTop: 20 }}>📦 Подписка: {subscriptionType || 'нет данных'}</p>
+     
+
         <>
-          <p>🧪 Осталось попыток: <strong>{Math.max(0, MAX_ATTEMPTS - uploadCount)}</strong> из {MAX_ATTEMPTS}</p>
+          <p>🧪 Осталось попыток: {remainingScans ?? 'неизвестно'}</p>
           <button onClick={handleSubscribe} style={styles.subscribeBtn}>💳 Оплатить подписку</button>
         </>
-      )}
+      
       {!subscribed && uploadCount >= MAX_ATTEMPTS && (
         <button onClick={handleResetAttempts} style={{ marginTop: 20, fontSize: 14, border: 'none', color: '#42a5f5', background: 'transparent', cursor: 'pointer' }}>
           🔄 Я оплатил — сбросить попытки
@@ -340,6 +326,99 @@ const ImageUploadWithWallet: React.FC = () => {
       )}
     </div>
   );
+};
+
+const styles: { [key: string]: React.CSSProperties } = {
+  container: {
+    padding: 40,
+    maxWidth: 600,
+    margin: '0 auto',
+    fontFamily: 'Segoe UI, sans-serif',
+    textAlign: 'center',
+    position: 'relative',
+  },
+  image: {
+    width: '100%',
+    maxHeight: 350,
+    objectFit: 'contain',
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  buttonRow: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 30,
+  },
+  commonButton: {
+    fontSize: 15,
+    borderRadius: 8,
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    width: 180,
+    height: 44,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: 'none',
+  },
+  uploadButton: {
+    backgroundColor: '#5c6bc0',
+    color: '#fff',
+  },
+  sendButton: {
+    backgroundColor: '#42a5f5',
+    color: '#fff',
+  },
+  clearButton: {
+    backgroundColor: '#757575',
+    color: '#fff',
+  },
+  result: {
+    marginTop: 40,
+    textAlign: 'left',
+  },
+  text: {
+    background: '#f9f9f9',
+    padding: 16,
+    borderRadius: 8,
+    fontSize: '16px',
+    whiteSpace: 'pre-wrap',
+  },
+  error: {
+    color: 'red',
+    fontSize: '16px',
+    marginTop: 15,
+  },
+  subscribeBtn: {
+    marginTop: 10,
+    backgroundColor: '#ff9800',
+    padding: '10px 20px',
+    border: 'none',
+    borderRadius: 8,
+    color: '#fff',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+  },
+  linkBtn: {
+    position: 'absolute',
+    top: -20,
+    right: 0,
+    background: 'transparent',
+    border: 'none',
+    color: '#4caf50',
+    fontSize: 14,
+    cursor: 'pointer',
+    textDecoration: 'underline',
+  },
+  previewLinks: {
+    marginBottom: 20,
+  },
+  link: {
+    color: '#3f51b5',
+    marginRight: 10,
+    textDecoration: 'none'
+  }
 };
 
 export default ImageUploadWithWallet;
