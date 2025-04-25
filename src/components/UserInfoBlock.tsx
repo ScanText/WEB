@@ -21,7 +21,7 @@ const UserInfoBlock: React.FC = () => {
         </div>
 
         {[
-          ['Количество сканирований', '3 попытки', '100 попыток', 'Неограниченно'],
+          ['Количество сканирований', '10 попыток', '100 попыток', 'Неограниченно'],
           ['ИИ (ChatGPT)', '3 запроса / день', 'неограниченно', 'неограниченно'],
           ['Точность текста', 'Хорошая (Tesseract)', 'Максимальная (Google Vision)', 'Максимальная (Google Vision)'],
           ['Скорость', 'Быстрая', 'Очень быстрая', 'Мгновенная'],
@@ -45,12 +45,12 @@ const UserInfoBlock: React.FC = () => {
           </div>
 
           <div style={styles.cell}>
-            <CardPaymentButton amount={200} reference="sub-plus" />
+            <CardPaymentButton amount={20000} reference="sub-plus" />
             <div style={styles.paymentNote}>Подписка: <strong>Plus 200 грн</strong></div>
           </div>
 
           <div style={styles.cell}>
-            <CardPaymentButton amount={400} reference="sub-premium" />
+            <CardPaymentButton amount={40000} reference="sub-premium" />
             <div style={styles.paymentNote}>Подписка: <strong>Premium 400 грн</strong></div>
           </div>
         </div>

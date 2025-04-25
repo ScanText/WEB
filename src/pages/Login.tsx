@@ -21,16 +21,16 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         login,
         password,
       });
-
-      const { id: user_id, login: userLogin, role } = response.data;
-
+  
+      const { id: user_id, login: userLogin, role, subscription_type, remaining_scans } = response.data;
+  
       localStorage.setItem('user_id', String(user_id));
       localStorage.setItem('loggedInUser', userLogin);
       localStorage.setItem('role', role || 'user');
-      localStorage.setItem('subscription', 'false');
-      localStorage.setItem('subscriptionType', 'free');
-
-      onLogin(userLogin); // передаём логин
+      localStorage.setItem('subscriptionType', subscription_type || 'none');
+      localStorage.setItem('remainingScans', String(remaining_scans ?? 0));
+  
+      onLogin(userLogin);
       navigate('/');
       window.location.reload();
     } catch (err) {
@@ -38,6 +38,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       setError('Неверный логин или пароль');
     }
   };
+  
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
