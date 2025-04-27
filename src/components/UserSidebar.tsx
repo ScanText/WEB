@@ -23,6 +23,10 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ userPhoto, setUserPhoto }) =>
     }
   };
 
+  const handleGoToPricing = () => {
+    console.log('➡️ Начало оплаты: переход на страницу выбора тарифа');
+    navigate('/pricing');
+  };
   return (
     <div style={styles.sidebar}>
       <img
@@ -51,7 +55,8 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ userPhoto, setUserPhoto }) =>
       </button>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 20 }}>
         <button
-          onClick={() => navigate('/pricing')}
+          //onClick={() => navigate('/pricing')}
+          onClick={handleGoToPricing}
           style={{
             backgroundColor: '#f97316', // 🟧 оранжевая
             color: '#fff',

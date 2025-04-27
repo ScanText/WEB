@@ -75,9 +75,7 @@ const HomePage: React.FC = () => {
                     >
                       Оформить Plus
                     </button>
-                    <div style={{ marginTop: 30, textAlign: 'center' }}>
-                      <CardPaymentButton />
-                    </div>
+                    
                   </li>
                 </ul>
               </div>

@@ -24,7 +24,7 @@ const PaymentPage: React.FC = () => {
     <div style={{ padding: 40, textAlign: 'center' }}>
       <h2>{current.title}</h2>
       <p>Стоимость: {current.amount} грн</p>
-      <CardPaymentButton amount={current.amount} reference={`sub-${plan}`} />
+     
     </div>
   );
 };

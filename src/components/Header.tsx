@@ -23,6 +23,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, hasSubscription, userPhoto 
 
   const handleLogout = () => {
     localStorage.clear();
+    localStorage.removeItem('loggedInUser');
     setUsername('');
     navigate('/login');
     window.location.reload();

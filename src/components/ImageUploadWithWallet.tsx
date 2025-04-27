@@ -35,6 +35,25 @@ const ImageUploadWithWallet: React.FC = () => {
   );
   const [recognizedText, setRecognizedText] = useState('');
 
+  const fetchUserInfo = async () => {
+    if (!login) return;
+  
+    try {
+      const res = await axios.get(`http://localhost:8000/user/user_info/${login}`);
+      const { subscription_type, remaining_scans } = res.data;
+  
+      setSubscriptionType(subscription_type);
+      setRemainingScans(remaining_scans);
+  
+      localStorage.setItem('subscriptionType', subscription_type || 'none');
+      localStorage.setItem('remainingScans', String(remaining_scans ?? 0));
+  
+      console.log('✅ Информация о пользователе обновлена:', subscription_type, remaining_scans);
+    } catch (err) {
+      console.error('❌ Ошибка загрузки информации о пользователе:', err);
+    }
+  };
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (selected) {
@@ -76,6 +95,7 @@ const ImageUploadWithWallet: React.FC = () => {
   useEffect(() => {
     if (login) {
       fetchUploads();
+      fetchUserInfo();
     }
   }, [login]);
 
@@ -101,109 +121,7 @@ const ImageUploadWithWallet: React.FC = () => {
       console.error('❌ Ошибка загрузки:', err);
     }
   };
-/*
-  const handleUpload = async () => {
-    const uid = localStorage.getItem('user_id') || '';
-    const login = localStorage.getItem('loggedInUser') || '';
-    const plan = localStorage.getItem('subscriptionType') || 'free';
 
-    const MAX_LIMITS: Record<string, number> = {
-      free: 3,
-      plus: 100,
-      premium: Infinity,
-    };
-
-    if (!file || !uid || login === 'true' || login === 'false') {
-      setError('Ошибка авторизации. Попробуйте войти снова.');
-      return;
-    }
-
-    const limit = MAX_LIMITS[plan];
-    if (uploadCount >= limit) {
-      setError(`💡 Вы использовали все попытки по тарифу ${plan.toUpperCase()}. Пожалуйста, оформите подписку.`);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('lang', lang);
-    formData.append('user_id', uid);
-    formData.append('login', login);
-
-    try {
-      const response = await axios.post('http://fastapitext-black-feather-5039.fly.dev', formData);
-      if (response.data?.text) {
-        setText(response.data.text);
-        setError('');
-        const newCount = uploadCount + 1;
-        setUploadCount(newCount);
-        localStorage.setItem('uploadCount', String(newCount));
-      } else {
-        setText('');
-        setError('Нет текста в ответе сервера.');
-      }
-    } catch (err) {
-      console.error('Ошибка при загрузке:', err);
-      setText('');
-      setError('Ошибка при распознавании текста.');
-    }
-  };
-
-  const handleUploadGpt = async () => {
-    const uid = localStorage.getItem('user_id') || '';
-    const login = localStorage.getItem('loggedInUser') || '';
-
-    if (!file || !uid || login === 'true' || login === 'false') {
-      setError('Ошибка авторизации. Попробуйте войти снова.');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('user_id', uid);
-    formData.append('login', login);
-
-    try {
-      const response = await axios.post('http://localhost:8000/gpt-ocr', formData);
-      if (response.data?.text) {
-        setText(response.data.text);
-        setError('');
-
-        const now = new Date();
-        const timestamp = now.toISOString().replace(/[:.]/g, '-');
-        const blob = new Blob(['\uFEFF' + response.data.text], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const filename = `gpt_text_${timestamp}.txt`;
-
-        const downloadLink = document.createElement('a');
-        downloadLink.href = url;
-        downloadLink.download = filename;
-        downloadLink.click();
-
-        const plan = localStorage.getItem('subscriptionType') || 'free';
-        const MAX_LIMITS: Record<string, number> = {
-          free: 3,
-          plus: 100,
-          premium: Infinity,
-        };
-
-        const limit = MAX_LIMITS[plan];
-        if (uploadCount < limit) {
-          const newCount = uploadCount + 1;
-          setUploadCount(newCount);
-          localStorage.setItem('uploadCount', String(newCount));
-        }
-      } else {
-        setText('');
-        setError('Нет текста в ответе от GPT.');
-      }
-    } catch (err) {
-      console.error('GPT-OCR ошибка:', err);
-      setText('');
-      setError('Ошибка при распознавании через GPT.');
-    }
-  };
-*/
   const handleResetAttempts = () => {
     localStorage.setItem('uploadCount', '0');
     setUploadCount(0);

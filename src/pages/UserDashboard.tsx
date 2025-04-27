@@ -14,6 +14,8 @@ interface User {
   role: string;
   subscription_type: string;
   remaining_scans: number;
+  start_date: string;
+  end_date: string;
 }
 
 const UserDashboard: React.FC = () => {

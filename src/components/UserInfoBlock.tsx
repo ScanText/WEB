@@ -1,59 +1,76 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CardPaymentButton from '../components/CardPaymentButton';
+import axios from 'axios';
+
+
+interface Subscription {
+  id: number;
+  name: string;
+  price: number;
+  scan_limit: number;
+  duration_days: number;
+  description?: string;
+}
 
 const UserInfoBlock: React.FC = () => {
   const navigate = useNavigate();
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [loading, setLoading] = useState(true);
+  const login = localStorage.getItem('loggedInUser');
+
+  useEffect(() => {
+    axios.get('http://localhost:8000/subscriptions/')
+      .then((res) => {
+        setSubscriptions(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Ошибка загрузки подписок:', err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <p>🔄 Загрузка подписок...</p>;
+
+  if (!login) {
+    navigate('/login'); // Если юзер не залогинен — перенаправляем
+    return null;
+  }
 
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>Выберите подходящий вам план</h2>
       <p style={styles.subtitle}>
-        Оставайтесь продуктивными. Оцифруйте свои знания с помощью лучшего OCR-движка.
+        Оцифруруйте свои знания с помощью лучшего OCR-движка ✨
       </p>
 
       <div style={styles.table}>
         <div style={styles.rowHeader}>
-          <div style={styles.cell}></div>
-          <div style={styles.cell}>Базовый<br /><strong>₴0</strong></div>
-          <div style={styles.cell}>Плюс<br /><strong>₴200/мес.</strong></div>
-          <div style={styles.cell}>Премиум<br /><strong>₴400/мес.</strong></div>
+          <div style={styles.cell}>Название</div>
+          <div style={styles.cell}>Описание</div>
+          <div style={styles.cell}>Кол-во сканов</div>
+          <div style={styles.cell}>Цена</div>
+          <div style={styles.cell}>Действия</div>
         </div>
 
-        {[
-          ['Количество сканирований', '10 попыток', '100 попыток', 'Неограниченно'],
-          ['ИИ (ChatGPT)', '3 запроса / день', 'неограниченно', 'неограниченно'],
-          ['Точность текста', 'Хорошая (Tesseract)', 'Максимальная (Google Vision)', 'Максимальная (Google Vision)'],
-          ['Скорость', 'Быстрая', 'Очень быстрая', 'Мгновенная'],
-          ['Без рекламы', '-', '✓', '✓'],
-          ['Мультистраничные документы', '-', '✓', '✓'],
-          ['Массовая обработка', '-', '-', '✓'],
-          ['Поддержка', 'Обычная', 'Приоритет', 'Прямая'],
-        ].map((row, rowIndex) => (
-          <div key={rowIndex} style={styles.row}>
-            {row.map((cell, colIndex) => (
-              <div key={colIndex} style={styles.cell}>{cell}</div>
-            ))}
+        {subscriptions.map((sub) => (
+          <div key={sub.id} style={styles.row}>
+            <div style={styles.cell}>{sub.name}</div>
+            <div style={styles.cell}>{sub.description || '-'}</div>
+            <div style={styles.cell}>{sub.scan_limit === 9999 ? 'Безлимит' : sub.scan_limit}</div>
+            <div style={styles.cell}><strong>{sub.price} ₴</strong></div>
+            <div style={styles.cell}>
+              {sub.price > 0 ? (
+                <CardPaymentButton amount={sub.price * 100} subscriptionId={sub.id}/>
+              ) : (
+                <button style={styles.freeBtn} onClick={() => navigate('/')}>
+                  Бесплатно
+                </button>
+              )}
+            </div>
           </div>
         ))}
-
-        <div style={styles.rowFooter}>
-          <div style={styles.cell}></div>
-
-          <div style={styles.cell}>
-            <button style={styles.freeBtn} onClick={() => navigate('/')}>Попробовать бесплатно</button>
-          </div>
-
-          <div style={styles.cell}>
-            <CardPaymentButton amount={20000} reference="sub-plus" />
-            <div style={styles.paymentNote}>Подписка: <strong>Plus 200 грн</strong></div>
-          </div>
-
-          <div style={styles.cell}>
-            <CardPaymentButton amount={40000} reference="sub-premium" />
-            <div style={styles.paymentNote}>Подписка: <strong>Premium 400 грн</strong></div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -79,15 +96,9 @@ const styles: { [key: string]: React.CSSProperties } = {
   table: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 2,
-    borderRadius: 8,
-    overflow: 'hidden',
-    maxWidth: 1000,
+    gap: 4,
+    maxWidth: 1200,
     margin: '0 auto',
-  },
-  row: {
-    display: 'flex',
-    backgroundColor: '#fff',
   },
   rowHeader: {
     display: 'flex',
@@ -95,39 +106,26 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 'bold',
     padding: '12px 0',
   },
-  rowFooter: {
+  row: {
     display: 'flex',
-    backgroundColor: '#f5f5f5',
-    padding: 16,
+    backgroundColor: '#fff',
+    borderBottom: '1px solid #ccc',
+    alignItems: 'center',
   },
   cell: {
     flex: 1,
     padding: '12px',
-    borderRight: '1px solid #ccc',
+    borderRight: '1px solid #ddd',
     fontSize: 14,
-  },
-  blueBtn: {
-    backgroundColor: '#3f51b5',
-    color: '#fff',
-    border: 'none',
-    padding: '10px 16px',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontWeight: 'bold',
   },
   freeBtn: {
     backgroundColor: '#4caf50',
     color: '#fff',
     border: 'none',
-    padding: '10px 16px',
+    padding: '8px 14px',
     borderRadius: 6,
     cursor: 'pointer',
     fontWeight: 'bold',
-  },
-  paymentNote: {
-    marginTop: 8,
-    fontSize: 13,
-    color: '#555',
   },
 };
 
